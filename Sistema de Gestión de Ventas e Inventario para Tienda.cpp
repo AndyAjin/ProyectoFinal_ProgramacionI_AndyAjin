@@ -4,6 +4,16 @@
 #include <iomanip>
 using namespace std;
 
+struct Ventas{
+    char cliente[50];
+    int cantidad;
+    int tipopago;
+    double precio;
+    double subtotal;
+    double descuento;
+    double total;
+};
+
 struct Productos{
     int id;
     char nombre[40];
@@ -12,6 +22,35 @@ struct Productos{
     float precio;
     bool estado;
 };
+
+void mostrarTipoPago(int tipoPago) { //funcion para verificar que tipo de pago ingreso el usuario
+    switch (tipoPago) {
+        case 1: cout << "Efectivo"; break;
+        case 2: cout << "Tarjeta"; break;
+        case 3: cout << "Transferencia"; break;
+        default: cout << "Desconocido"; break;
+    }
+}
+
+double calcularSubtotal(int cantidad, double precio) { //funcion para calcular subtotal
+    return cantidad * precio;
+}
+
+double calcularDescuento(double subtotal, int tipoPago) { //funcion para definir y calcular descuento
+    double descuento = 0;
+
+    if (subtotal >= 500) {
+        descuento += subtotal * 0.05;
+    }
+    if (tipoPago == 1 && subtotal >= 300) {
+        descuento += subtotal * 0.02;
+    }
+    return descuento;
+}
+
+double calcularTotal(double subtotal, double descuento) { //Funcion para calcular total de ventas
+    return subtotal - descuento;
+}
 
 bool compararCadenas(const char a[], const char b[]) {
     int i = 0;
@@ -341,6 +380,60 @@ void modificardatos() {
         archivoOut.close();
 
     }while(opcion != 4);
+}
+
+void registrarVenta() { //funcion para regristrar ventas
+    Ventas venta;
+    ofstream archivo("ventas.dat", ios::app | ios::binary);
+
+    cin.ignore();
+    cout << "\n--- Registro de Venta ---\n";
+    cout << "Nombre del cliente: ";
+    cin.getline(venta.cliente, 50);
+
+    // Validar cantidad
+    do {
+        cout << "Cantidad: ";
+        cin >> venta.cantidad;
+        if (venta.cantidad < 0) {
+            cout << "Error: la cantidad debe ser mayor a 0\n";
+            continue;
+        }
+        break;
+    } while (venta.cantidad < 0);
+
+    // Validar precio
+    do {
+        cout << "Precio unitario: ";
+        cin >> venta.precio;
+        if (venta.precio < 0) {
+            cout << "Error: el precio debe ser mayor a 0\n";
+            continue;
+        }
+        break;
+    } while (venta.precio < 0);
+
+    // Validar tipo de pago
+    do {
+        cout << "Tipo de pago (1=Efectivo, 2=Tarjeta, 3=Transferencia): ";
+        cin >> venta.tipopago;
+        if (venta.tipopago < 1 || venta.tipopago > 3) {
+            cout << "Error: tipo de pago inválido.\n";
+            continue;
+        }
+        break;
+    } while (true);
+
+    venta.subtotal = calcularSubtotal(venta.cantidad, venta.precio);
+    venta.descuento = calcularDescuento(venta.subtotal, venta.tipopago);
+    venta.total = calcularTotal(venta.subtotal, venta.descuento);
+
+    convertirMayusculas(venta.cliente);
+    
+    archivo.write((char*)&venta, sizeof(venta));
+    archivo.close();
+
+    cout << "Venta registrada correctamente.\n";
 }
 
 void menu() { //funcion para mostrar un menu interactivo en la pantalla
