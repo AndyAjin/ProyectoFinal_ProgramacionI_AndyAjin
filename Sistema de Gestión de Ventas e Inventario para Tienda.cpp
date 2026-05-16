@@ -6,6 +6,7 @@ using namespace std;
 
 struct Ventas{
     char cliente[50];
+    char producto[40];
     int cantidad;
     int tipopago;
     double precio;
@@ -73,6 +74,72 @@ void convertirMayusculas(char texto[]) {
     for (int i = 0; texto[i] != '\0'; i++) {
         texto[i] = toupper(texto[i]);
   }
+}
+
+bool obtenerproducto(Productos &producto){
+    int opcion;
+    cout << "\n===== Sistema de Busqueda de Productos =====\n";
+        cout << "1. Buscar por Codigo/ID\n";
+        cout << "2. Buscar por Nombre\n";
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+        cin.ignore();
+
+    bool encontrado = false;
+
+    do{
+        ifstream archivo("productos.dat", ios::binary);
+
+    if (!archivo) {
+        cout << "No se puede abrir el archivo.\n";
+        return false;
+    }
+
+        if (opcion == 1){
+            int idbuscar;
+            cout << "Ingrese el ID del producto: ";
+            cin >> idbuscar;
+
+            while (archivo.read((char*)&producto, sizeof(Productos))) {
+
+            if (producto.estado && producto.id == idbuscar) {
+                cout << "\nID: " << producto.id;
+                cout << "\nProducto: " << producto.nombre;
+                encontrado = true;
+                archivo.close();
+                return true;
+            }
+        }
+        }else if(opcion == 2){
+            char nombrebuscar[40];
+            cout << "Ingrese el nombre del producto: ";
+            cin.getline(nombrebuscar, 50);
+            convertirMayusculas(nombrebuscar);
+
+            while (archivo.read((char*)&producto, sizeof(Productos))) {
+
+            if (producto.estado && compararCadenas(producto.nombre, nombrebuscar)) {
+                cout << "\nID: " << producto.id;
+                cout << "\nProducto: " << producto.nombre;
+                encontrado = true;
+                archivo.close();
+                return true;
+            }
+        }
+    }else {
+        cout << "Opcion invalida.\n";
+        return false;
+    }
+
+    archivo.close();
+
+        if (!encontrado) {
+            cout << "Producto no encontrado. Intente de nuevo.\n";
+        }
+
+    }while(!encontrado);
+
+    return true; // no encontrado
 }
 
 void registrarproducto() { //funcion para regristrar
@@ -262,10 +329,11 @@ void modificardatos() {
     int opcion;
     do{
     cout << "\n===== Sistema de Modificacion de Productos =====\n";
-        cout << "1. Sumar Stock\n";
-        cout << "2. Cambiar Precio unitario\n";
-        cout << "3. Habilitar oh desabilitar producto\n";
-        cout << "4. Salir\n";
+        cout << "1. Cambiar nombre de producto\n";
+        cout << "2. Sumar Stock\n";
+        cout << "3. Cambiar Precio unitario\n";
+        cout << "4. Habilitar oh desabilitar producto\n";
+        cout << "5. Salir\n";
         cout << "Seleccione una opcion: ";
         cin >> opcion;
         cin.ignore();
@@ -274,8 +342,44 @@ void modificardatos() {
     bool encontrado = false;
 
     switch(opcion){
-
+    
     case 1:{
+    cout << "\nIngrese el ID del Producto a modificar: ";
+        cin >> idbuscar;
+        cin.ignore();
+
+        for (int i = 0; i < total; i++) {
+            if (productos[i].id == idbuscar) {
+                encontrado = true;
+                char nuevonombre[40]; 
+
+            // Mostrar datos originales
+            cout << "\nID: " << productos[i].id;
+            cout << "\nProducto: " << productos[i].nombre;
+            cout << "\nStock: " << productos[i].stock;
+
+        // Pedir nuevos datos
+        cout << "\nIngrese el nuevo nombre del producto: ";
+        cin.getline(nuevonombre, 40);
+        convertirMayusculas(nuevonombre);
+
+        int j = 0;
+                while (nuevonombre[j] != '\0' && j < 39) {
+                    productos[i].nombre[j] = nuevonombre[j];
+                    j++;
+                }
+                productos[i].nombre[j] = '\0';
+
+        cout << "Nombre de Producto actualizado correctamente.\n";
+        break;
+            }
+        }
+
+        if (!encontrado) cout << "Producto no encontrado.\n";
+        break;
+    }
+
+    case 2:{
         cout << "\nIngrese el ID del Producto a modificar: ";
         cin >> idbuscar;
 
@@ -308,7 +412,7 @@ void modificardatos() {
         break;
     }
 
-    case 2:{
+    case 3:{
         cout << "\nIngrese el ID del Producto a modificar: ";
         cin >> idbuscar;
         
@@ -337,7 +441,7 @@ void modificardatos() {
     break;
 }
 
-    case 3: {
+    case 4: {
         cout << "\nIngrese el ID del Producto: ";
         cin >> idbuscar;
 
@@ -363,7 +467,7 @@ void modificardatos() {
             break;
 }
         
-    case 4:
+    case 5:
         cout << "Saliendo del sistema..." << endl; 
         break;
 
@@ -379,39 +483,83 @@ void modificardatos() {
     }
         archivoOut.close();
 
-    }while(opcion != 4);
+    }while(opcion != 5);
 }
 
 void registrarVenta() { //funcion para regristrar ventas
     Ventas venta;
+    Productos producto;
+    char continuar;
     ofstream archivo("ventas.dat", ios::app | ios::binary);
+
+    if (!archivo) {
+        cout << "No se puede abrir el archivo.\n";
+        return;
+    }
 
     cin.ignore();
     cout << "\n--- Registro de Venta ---\n";
     cout << "Nombre del cliente: ";
     cin.getline(venta.cliente, 50);
 
+    venta.subtotal = 0;
+    
+    do{
+    if(!obtenerproducto(producto)){
+        cout << "Producto no encontrado\n";
+        return;
+    }
+
+    do{
     // Validar cantidad
-    do {
-        cout << "Cantidad: ";
+        cout << "\nCantidad: ";
         cin >> venta.cantidad;
-        if (venta.cantidad < 0) {
+        if (venta.cantidad <= 0) {
             cout << "Error: la cantidad debe ser mayor a 0\n";
             continue;
         }
-        break;
-    } while (venta.cantidad < 0);
-
-    // Validar precio
-    do {
-        cout << "Precio unitario: ";
-        cin >> venta.precio;
-        if (venta.precio < 0) {
-            cout << "Error: el precio debe ser mayor a 0\n";
+        if (venta.cantidad > producto.stock) {
+            cout << "Error: stock insuficiente. Stock disponible: " << producto.stock << endl;
             continue;
         }
         break;
-    } while (venta.precio < 0);
+    } while (true);
+
+    venta.precio = producto.precio;
+    cout << "Precio unitario: Q." << venta.precio << endl;
+
+    // Acumular subtotal de este producto
+    venta.subtotal += calcularSubtotal(venta.cantidad, venta.precio);
+
+    //Descontar stock en productos.dat
+    fstream archivoProd("productos.dat", ios::in | ios::out | ios::binary);
+
+    if (!archivoProd) {
+        cout << "No se puede abrir productos.dat\n";
+        return;
+    }
+
+    Productos temp;
+    while (archivoProd.read((char*)&temp, sizeof(temp))) {
+        if (temp.id == producto.id) {
+            temp.stock -= venta.cantidad; // descontar stock
+            if (temp.stock < 0) temp.stock = 0; // seguridad
+
+        // Mover puntero hacia atrás para sobrescribir
+        // Retroceder puntero de lectura al inicio del registro
+        archivoProd.seekp(archivoProd.tellg() - sizeof(temp));
+        // Sobrescribir el registro actualizado
+        archivoProd.write((char*)&temp, sizeof(temp));
+            break;
+        }
+    }
+    archivoProd.close();
+
+    cout << "Desea agregar otro producto (S/N): ";
+        cin >> continuar;
+        cin.ignore();
+
+    } while (continuar == 'S' || continuar == 's');
 
     // Validar tipo de pago
     do {
@@ -424,7 +572,6 @@ void registrarVenta() { //funcion para regristrar ventas
         break;
     } while (true);
 
-    venta.subtotal = calcularSubtotal(venta.cantidad, venta.precio);
     venta.descuento = calcularDescuento(venta.subtotal, venta.tipopago);
     venta.total = calcularTotal(venta.subtotal, venta.descuento);
 
@@ -443,8 +590,9 @@ void menu() { //funcion para mostrar un menu interactivo en la pantalla
         cout << "1. Registrar Producto" << endl;
         cout << "2. Listar Productos" << endl;
         cout << "3. Buscar Producto" << endl;
-        cout << "4. Modificar Precio, Stock y Estado de Productos" << endl;
-        cout << "5. Salir" << endl;
+        cout << "4. Modificar Nombre, Precio, Stock y Estado de Productos" << endl;
+        cout << "5. Registrar Venta" << endl;
+        cout << "6. Salir" << endl;
         cout << "Seleccione una opcion: ";
         cin >> opcion;
 
@@ -465,7 +613,11 @@ void menu() { //funcion para mostrar un menu interactivo en la pantalla
             modificardatos();
             break;
 
-            case 5: 
+            case 5:
+            registrarVenta();
+            break;
+
+            case 6: 
             cout << "Saliendo del sistema..." << endl; 
             break;
 
@@ -473,7 +625,7 @@ void menu() { //funcion para mostrar un menu interactivo en la pantalla
             cout << "Opción inválida" << endl; 
             continue;
         }
-    } while (opcion != 5);
+    } while (opcion != 6);
 }
 
 int main() {
