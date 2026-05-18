@@ -4,6 +4,15 @@
 #include <iomanip>
 using namespace std;
 
+struct Productos{
+    int id;
+    char nombre[40];
+    char categoria[30];
+    int stock;
+    float precio;
+    bool estado;
+};
+
 struct Ventas{
     char cliente[50];
     char producto[40];
@@ -13,15 +22,7 @@ struct Ventas{
     double subtotal;
     double descuento;
     double total;
-};
-
-struct Productos{
-    int id;
-    char nombre[40];
-    char categoria[30];
-    int stock;
-    float precio;
-    bool estado;
+    double iva;
 };
 
 void mostrarTipoPago(int tipoPago) { //funcion para verificar que tipo de pago ingreso el usuario
@@ -51,6 +52,11 @@ double calcularDescuento(double subtotal, int tipoPago) { //funcion para definir
 
 double calcularTotal(double subtotal, double descuento) { //Funcion para calcular total de ventas
     return subtotal - descuento;
+}
+
+double calculariva(double subtotal){
+    double iva = 0.12;
+    return subtotal * iva;
 }
 
 bool compararCadenas(const char a[], const char b[]) {
@@ -547,7 +553,7 @@ void registrarVenta() { //funcion para regristrar ventas
 
         // Mover puntero hacia atrás para sobrescribir
         // Retroceder puntero de lectura al inicio del registro
-        archivoProd.seekp(archivoProd.tellg() - sizeof(temp));
+        archivoProd.seekg(archivoProd.tellg() - (std::streamoff)sizeof(temp));
         // Sobrescribir el registro actualizado
         archivoProd.write((char*)&temp, sizeof(temp));
             break;
@@ -572,6 +578,7 @@ void registrarVenta() { //funcion para regristrar ventas
         break;
     } while (true);
 
+    venta.iva = calculariva(venta.subtotal);
     venta.descuento = calcularDescuento(venta.subtotal, venta.tipopago);
     venta.total = calcularTotal(venta.subtotal, venta.descuento);
 
@@ -583,7 +590,7 @@ void registrarVenta() { //funcion para regristrar ventas
     cout << "Venta registrada correctamente.\n";
 }
 
-void menu() { //funcion para mostrar un menu interactivo en la pantalla
+void gestionproductos() { 
     int opcion;
     do {
         cout << "\n===== Sistema de Ventas e Inventario =====\n";
@@ -591,8 +598,7 @@ void menu() { //funcion para mostrar un menu interactivo en la pantalla
         cout << "2. Listar Productos" << endl;
         cout << "3. Buscar Producto" << endl;
         cout << "4. Modificar Nombre, Precio, Stock y Estado de Productos" << endl;
-        cout << "5. Registrar Venta" << endl;
-        cout << "6. Salir" << endl;
+        cout << "5. Salir" << endl;
         cout << "Seleccione una opcion: ";
         cin >> opcion;
 
@@ -613,11 +619,7 @@ void menu() { //funcion para mostrar un menu interactivo en la pantalla
             modificardatos();
             break;
 
-            case 5:
-            registrarVenta();
-            break;
-
-            case 6: 
+            case 5: 
             cout << "Saliendo del sistema..." << endl; 
             break;
 
@@ -625,7 +627,68 @@ void menu() { //funcion para mostrar un menu interactivo en la pantalla
             cout << "Opción inválida" << endl; 
             continue;
         }
-    } while (opcion != 6);
+    } while (opcion != 5);
+}
+
+void gestionventas(){
+
+        int opcion;
+    do {
+        cout << "\n===== Sistema de Ventas e Inventario =====\n";
+        cout << "1. Registrar Venta" << endl;
+        cout << "2. Mostrar ventas" << endl;
+        cout << "3. Salir" << endl;
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1: 
+            registrarVenta();
+            break;
+            
+            case 2: 
+
+            break;
+
+            case 3: 
+            cout << "Saliendo del sistema..." << endl; 
+            break;
+
+            default: 
+            cout << "Opción inválida" << endl; 
+            continue;
+        }
+    } while (opcion != 3);
+}
+
+void menu() { //funcion para mostrar un menu interactivo en la pantalla
+    int opcion;
+    do {
+        cout << "\n===== Sistema de Ventas e Inventario =====\n";
+        cout << "1. Gestion de Productos" << endl;
+        cout << "2. Gestion de ventas" << endl;
+        cout << "3. Salir" << endl;
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1: 
+            gestionproductos();
+            break;
+            
+            case 2: 
+            gestionventas();
+            break;
+
+            case 3: 
+            cout << "Saliendo del sistema..." << endl; 
+            break;
+
+            default: 
+            cout << "Opción inválida" << endl; 
+            continue;
+        }
+    } while (opcion != 3);
 }
 
 int main() {
