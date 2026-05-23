@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cctype>
 #include <iomanip>
+#include <cstring>
 using namespace std;
 
 struct Productos{
@@ -15,14 +16,17 @@ struct Productos{
 
 struct Ventas{
     char cliente[50];
-    char producto[40];
-    int cantidad;
     int tipopago;
-    double precio;
-    double subtotal;
+    int numProductos;   // número de productos en la venta
+    char productos[10][40]; // hasta 10 productos por venta
+    int cantidades[10];     // cantidades correspondientes
+    double precios[10];     // precios unitarios correspondientes
+    double subtotales[10];  // subtotal por cada producto
+
+    double subtotal;   // subtotal general
     double descuento;
-    double total;
     double iva;
+    double total;
 };
 
 void mostrarTipoPago(int tipoPago) { //funcion para verificar que tipo de pago ingreso el usuario
@@ -50,8 +54,8 @@ double calcularDescuento(double subtotal, int tipoPago) { //funcion para definir
     return descuento;
 }
 
-double calcularTotal(double subtotal, double descuento) { //Funcion para calcular total de ventas
-    return subtotal - descuento;
+double calcularTotal(double subtotal, double iva, double descuento) { //Funcion para calcular total de ventas
+    return (subtotal + iva) - descuento;
 }
 
 double calculariva(double subtotal){
@@ -509,6 +513,7 @@ void registrarVenta() { //funcion para regristrar ventas
     cin.getline(venta.cliente, 50);
 
     venta.subtotal = 0;
+    venta.numProductos = 0;
     
     do{
     if(!obtenerproducto(producto)){
@@ -516,26 +521,30 @@ void registrarVenta() { //funcion para regristrar ventas
         return;
     }
 
+    int cantidad;
     do{
     // Validar cantidad
         cout << "\nCantidad: ";
-        cin >> venta.cantidad;
-        if (venta.cantidad <= 0) {
+        cin >> cantidad;
+        if (cantidad <= 0) {
             cout << "Error: la cantidad debe ser mayor a 0\n";
             continue;
         }
-        if (venta.cantidad > producto.stock) {
+        if (cantidad > producto.stock) {
             cout << "Error: stock insuficiente. Stock disponible: " << producto.stock << endl;
             continue;
         }
         break;
     } while (true);
 
-    venta.precio = producto.precio;
-    cout << "Precio unitario: Q." << venta.precio << endl;
+    // Guardar datos del producto en la venta
+        strcpy(venta.productos[venta.numProductos], producto.nombre);
+        venta.cantidades[venta.numProductos] = cantidad;
+        venta.precios[venta.numProductos] = producto.precio;
+        venta.subtotales[venta.numProductos] = calcularSubtotal(cantidad, producto.precio);
 
-    // Acumular subtotal de este producto
-    venta.subtotal += calcularSubtotal(venta.cantidad, venta.precio);
+        venta.subtotal += venta.subtotales[venta.numProductos];
+        venta.numProductos++;
 
     //Descontar stock en productos.dat
     fstream archivoProd("productos.dat", ios::in | ios::out | ios::binary);
@@ -548,7 +557,7 @@ void registrarVenta() { //funcion para regristrar ventas
     Productos temp;
     while (archivoProd.read((char*)&temp, sizeof(temp))) {
         if (temp.id == producto.id) {
-            temp.stock -= venta.cantidad; // descontar stock
+            temp.stock -= cantidad; // descontar stock
             if (temp.stock < 0) temp.stock = 0; // seguridad
 
         // Mover puntero hacia atrás para sobrescribir
@@ -580,7 +589,7 @@ void registrarVenta() { //funcion para regristrar ventas
 
     venta.iva = calculariva(venta.subtotal);
     venta.descuento = calcularDescuento(venta.subtotal, venta.tipopago);
-    venta.total = calcularTotal(venta.subtotal, venta.descuento);
+    venta.total = calcularTotal(venta.subtotal, venta.iva, venta.descuento);
 
     convertirMayusculas(venta.cliente);
     
@@ -588,6 +597,39 @@ void registrarVenta() { //funcion para regristrar ventas
     archivo.close();
 
     cout << "Venta registrada correctamente.\n";
+}
+
+void mostrarventa(){
+Ventas venta;
+    ifstream archivo("ventas.dat", ios::binary);
+
+    if (!archivo) {
+        cout << "No se puede abrir el archivo.\n";
+        return;
+    }
+
+    cout << "\n========== LISTADO DE VENTAS ==========\n";
+    while (archivo.read((char*)&venta, sizeof(Ventas))) {
+        cout << "\nCliente: " << venta.cliente;
+        cout << "\nTipo de Pago: ";
+        mostrarTipoPago(venta.tipopago);
+
+        cout << "\n--- Productos ---";
+        for (int i = 0; i < venta.numProductos; i++) {
+            cout << "\nProducto: " << venta.productos[i];
+            cout << "\nCantidad: " << venta.cantidades[i];
+            cout << "\nPrecio Unitario: Q." << venta.precios[i];
+            cout << "\nSubtotal: Q." << venta.subtotales[i] << "\n";
+        }
+
+        cout << "\nSubtotal General: Q." << venta.subtotal;
+        cout << "\nIVA: Q." << venta.iva;
+        cout << "\nDescuento: Q." << venta.descuento;
+        cout << "\nTotal: Q." << venta.total;
+        cout << "\n-------------------------\n";
+    }
+
+    archivo.close();
 }
 
 void gestionproductos() { 
@@ -647,7 +689,7 @@ void gestionventas(){
             break;
             
             case 2: 
-
+            mostrarventa();
             break;
 
             case 3: 
