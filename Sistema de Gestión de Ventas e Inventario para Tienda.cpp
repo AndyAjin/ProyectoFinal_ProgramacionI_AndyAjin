@@ -152,6 +152,20 @@ bool obtenerproducto(Productos &producto){
     return true; // no encontrado
 }
 
+bool existeID(int idBuscar) {
+    ifstream archivo("productos.dat", ios::binary);
+    Productos temp;
+
+    while (archivo.read((char*)&temp, sizeof(Productos))) {
+        if (temp.id == idBuscar && temp.estado) {
+            archivo.close();
+            return true; // ID ya existe
+        }
+    }
+    archivo.close();
+    return false; // ID no encontrado
+}
+
 void registrarproducto() { //funcion para regristrar
     Productos producto;
     ofstream archivo("productos.dat", ios::binary | ios::app);
@@ -162,8 +176,16 @@ void registrarproducto() { //funcion para regristrar
     }
 
     cout << "\n--- Registro de Productos ---\n";
-    cout << "Id del producto: ";
-    cin >> producto.id;
+
+     //Validar ID unico
+    do {
+        cout << "Id del producto: ";
+        cin >> producto.id;
+        if (existeID(producto.id)) {
+            cout << "Ese ID ya existe. Intente con otro.\n";
+        }
+    } while (existeID(producto.id));
+
     cin.ignore();
     cout << "Nombre del producto: ";
     cin.getline( producto.nombre, 40);
@@ -211,6 +233,9 @@ void mostrarproducto() { //funcion para mostrar datos en pantalla
     }
 
     cout << "\n========== LISTADO ==========\n";
+
+    cout << fixed << setprecision(2);
+
     while(archivo.read((char*)&producto, sizeof(producto))) {
         if (producto.estado){
 
@@ -576,6 +601,12 @@ void registrarVenta() { //funcion para regristrar ventas
 
     } while (continuar == 'S' || continuar == 's');
 
+    //Validación: no permitir ventas con 0 productos
+    if (venta.numProductos == 0) {
+        cout << "No se registró ningún producto. Venta cancelada.\n";
+        return;
+    }
+
     // Validar tipo de pago
     do {
         cout << "Tipo de pago (1=Efectivo, 2=Tarjeta, 3=Transferencia): ";
@@ -614,6 +645,8 @@ Ventas venta;
         cout << "\nTipo de Pago: ";
         mostrarTipoPago(venta.tipopago);
 
+        cout << fixed << setprecision(2);
+
         cout << "\n--- Productos ---";
         for (int i = 0; i < venta.numProductos; i++) {
             cout << "\nProducto: " << venta.productos[i];
@@ -635,7 +668,7 @@ Ventas venta;
 void gestionproductos() { 
     int opcion;
     do {
-        cout << "\n===== Sistema de Ventas e Inventario =====\n";
+        cout << "\n===== Sistema de Inventario =====\n";
         cout << "1. Registrar Producto" << endl;
         cout << "2. Listar Productos" << endl;
         cout << "3. Buscar Producto" << endl;
@@ -676,7 +709,7 @@ void gestionventas(){
 
         int opcion;
     do {
-        cout << "\n===== Sistema de Ventas e Inventario =====\n";
+        cout << "\n===== Sistema de Ventas =====\n";
         cout << "1. Registrar Venta" << endl;
         cout << "2. Mostrar ventas" << endl;
         cout << "3. Salir" << endl;
