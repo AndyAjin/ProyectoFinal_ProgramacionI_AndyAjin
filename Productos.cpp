@@ -3,439 +3,316 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <vector>
+#include <cstring>
 using namespace std;
 
-bool obtenerproducto(Productos &producto){
-    int opcion;
-    cout << "\n===== Sistema de Busqueda de Productos =====\n";
-        cout << "1. Buscar por Codigo/ID\n";
-        cout << "2. Buscar por Nombre\n";
-        cout << "Seleccione una opcion: ";
-        cin >> opcion;
-        cin.ignore();
-
-    bool encontrado = false;
-
-    do{
-        ifstream archivo("productos.dat", ios::binary);
-
-    if (!archivo) {
-        cout << "No se puede abrir el archivo.\n";
-        return false;
-    }
-
-        if (opcion == 1){
-            int idbuscar;
-            cout << "Ingrese el ID del producto: ";
-            cin >> idbuscar;
-
-            while (archivo.read((char*)&producto, sizeof(Productos))) {
-
-            if (producto.estado && producto.id == idbuscar) {
-                cout << "\nID: " << producto.id;
-                cout << "\nProducto: " << producto.nombre;
-                encontrado = true;
-                archivo.close();
-                return true;
-            }
-        }
-        }else if(opcion == 2){
-            char nombrebuscar[40];
-            cout << "Ingrese el nombre del producto: ";
-            cin.getline(nombrebuscar, 50);
-            convertirMayusculas(nombrebuscar);
-
-            while (archivo.read((char*)&producto, sizeof(Productos))) {
-
-            if (producto.estado && compararCadenas(producto.nombre, nombrebuscar)) {
-                cout << "\nID: " << producto.id;
-                cout << "\nProducto: " << producto.nombre;
-                encontrado = true;
-                archivo.close();
-                return true;
-            }
-        }
-    }else {
-        cout << "Opcion invalida.\n";
-        return false;
-    }
-
-    archivo.close();
-
-        if (!encontrado) {
-            cout << "Producto no encontrado. Intente de nuevo.\n";
-        }
-
-    }while(!encontrado);
-
-    return true; // no encontrado
-}
-
-bool existeID(int idBuscar) {
+void cargarProductos(vector<Productos>& productos) {
+    productos.clear();
     ifstream archivo("productos.dat", ios::binary);
-    Productos temp;
-
-    while (archivo.read((char*)&temp, sizeof(Productos))) {
-        if (temp.id == idBuscar && temp.estado) {
-            archivo.close();
-            return true; // ID ya existe
-        }
-    }
-    archivo.close();
-    return false; // ID no encontrado
-}
-
-void registrarproducto() { //funcion para regristrar
-    Productos producto;
-    ofstream archivo("productos.dat", ios::binary | ios::app);
-
-    if(!archivo) {
-        cout << "\nError al abrir el archivo.\n";
+    if (!archivo) {
+        cout << "(Aviso) No hay productos registrados aún.\n";
         return;
     }
-
-    cout << "\n--- Registro de Productos ---\n";
-
-     //Validar ID unico
-    do {
-        cout << "Id del producto: ";
-        cin >> producto.id;
-        if (existeID(producto.id)) {
-            cout << "Ese ID ya existe. Intente con otro.\n";
-        }
-    } while (existeID(producto.id));
-
-    cin.ignore();
-    cout << "Nombre del producto: ";
-    cin.getline( producto.nombre, 40);
-    cout << "Categoria del producto: ";
-    cin.getline( producto.categoria, 30);
-
-    // Validar Stock
-    do {
-        cout << "Ingrese el Stock del Producto: ";
-        cin >> producto.stock;
-
-        if (producto.stock < 0) {
-            cout << "El stock no puede ser negativo. Intente de nuevo.\n";
-        }
-    } while (producto.stock < 0);
-
-    // Validar Precio
-    do {
-        cout << "Ingrese el Precio unitario del Producto: ";
-        cin >> producto.precio;
-        if (producto.precio < 0) {
-            cout << "El precio no puede ser negativo. Intente de nuevo.\n";
-        }
-    } while (producto.precio < 0);
-
-    producto.estado = true;
-
-    // Ejemplo: convertir nombre y categoría a mayúsculas antes de guardar
-    convertirMayusculas(producto.nombre);
-    convertirMinusculas(producto.categoria);
-
-    archivo.write((char*)&producto, sizeof(producto));
+    Productos p;
+    while (archivo.read((char*)&p, sizeof(Productos))) {
+        productos.push_back(p);
+    }
     archivo.close();
-
-    cout << "Datos de producto registrados correctamente.\n";
 }
 
-void mostrarproducto() { //funcion para mostrar datos en pantalla
-   Productos producto;
-    ifstream archivo("productos.dat", ios::binary);
+bool existeID(const vector<Productos>& productos, int idBuscar) {
+    for (size_t i = 0; i < productos.size(); i++) {
+        if (productos[i].id == idBuscar && productos[i].estado) {
+            return true;
+        }
+    }
+    return false;
+}
 
-    if(!archivo) {
+Productos* buscarporcodigo(vector<Productos>& producto, int id) {
+    for (size_t i = 0; i < producto.size(); i++) {
+        if (producto[i].id == id && producto[i].estado) {
+            return &producto[i];
+        }
+    }
+    return NULL;
+}
+
+Productos* buscarpornombre(vector<Productos>& producto, string nombre) {
+    Mayusculas(nombre);
+    for (size_t i = 0; i < producto.size(); i++) {
+        if (producto[i].estado && Cadenas(producto[i].nombre, nombre)) {
+            return &producto[i];
+        }
+    }
+    return NULL;
+}
+
+void registrarproducto(vector<Productos>& producto) {
+    try {
+        Productos nuevo;
+        ofstream archivo("productos.dat", ios::binary | ios::app);
+        if(!archivo) throw "No se puede abrir el archivo productos.dat";
+
+        cout << "\n--- Registro de Productos ---\n";
+
+        do {
+            cout << "Id del producto: ";
+            cin >> nuevo.id;
+            if (cin.fail()) throw "El ID debe ser un numero\n";
+            if (existeID(producto, nuevo.id)) {
+                cout << "Ese ID ya existe. Intente con otro.\n";
+            }
+        } while (existeID(producto, nuevo.id));
+
+        cin.ignore();
+        cout << "Nombre del producto: ";
+        cin.getline(nuevo.nombre, 50);
+        convertirMayusculas(nuevo.nombre);
+
+        cout << "Categoria del producto: ";
+        cin.getline(nuevo.categoria, 50);
+        convertirMinusculas(nuevo.categoria);
+
+        do {
+            cout << "Ingrese el Stock del Producto: ";
+            cin >> nuevo.stock;
+            if (nuevo.stock < 0) throw "El stock no puede ser negativo.\n";
+        } while (nuevo.stock < 0);
+
+        do {
+            cout << "Ingrese el Precio unitario del Producto: ";
+            cin >> nuevo.precio;
+            if (nuevo.precio < 0) throw "El precio no puede ser negativo.\n";
+        } while (nuevo.precio < 0);
+
+        nuevo.estado = true;
+
+        archivo.write((char*)&nuevo, sizeof(Productos));
+        archivo.close();
+        producto.push_back(nuevo);
+        cout << "Datos de producto registrados correctamente.\n";
+
+    } catch (const char* msg) {
+        cout << "Error: " << msg << endl;
+        cin.clear();
+        cin.ignore(1000, '\n');
+    }
+}
+
+void mostrarproducto(const vector<Productos>& productos) {
+    if (productos.empty()) {
         cout << "\nNo existe informacion almacenada.\n";
         return;
     }
 
     cout << "\n========== LISTADO ==========\n";
-
     cout << fixed << setprecision(2);
 
-    while(archivo.read((char*)&producto, sizeof(producto))) {
-        if (producto.estado){
-
-        cout << "\n-------------------------";
-        cout << "\nID: " << producto.id;
-        cout << "\nProducto: " << producto.nombre;
-        cout << "\nCategoria: " << producto.categoria;
-        cout << "\nStock: " << producto.stock;
-        cout << "\nPrecio Unitario: Q." << producto.precio;
-        cout << "\nEstado del Producto: " << producto.estado;
-        cout << "\n-------------------------\n";
+    for (size_t i = 0; i < productos.size(); i++) {
+        if (productos[i].estado) {
+            cout << "\nID: " << productos[i].id;
+            cout << "\nProducto: " << productos[i].nombre;
+            cout << "\nCategoria: " << productos[i].categoria;
+            cout << "\nStock: " << productos[i].stock;
+            cout << "\nPrecio Unitario: Q." << productos[i].precio;
+            cout << "\nEstado del Producto: " << productos[i].estado;
+            cout << "\n---------------------------------------------\n";
         }
     }
-    archivo.close();
 }
 
-void buscardatos() {
-    ifstream archivo("productos.dat", ios::binary);
+void modificardatos(vector<Productos>& producto, int id) {
+    try {
+        if (producto.empty()) throw "No hay productos cargados.";
 
-    if (!archivo) {
-        cout << "No se puede abrir el archivo.\n";
-        return;
+        int opcion;
+        do {
+            cout << "\n===== Sistema de Modificacion de Productos =====\n";
+            cout << "1. Cambiar nombre de producto\n";
+            cout << "2. Sumar Stock\n";
+            cout << "3. Cambiar Precio unitario\n";
+            cout << "4. Habilitar o deshabilitar producto\n";
+            cout << "5. Salir\n";
+            cout << "Seleccione una opcion: ";
+            cin >> opcion;
+            cin.ignore();
+
+            int idbuscar;
+            bool encontrado = false;
+
+            switch (opcion) {
+                case 1: {
+                    cout << "\nIngrese el ID del Producto a modificar: ";
+                    cin >> idbuscar;
+                    cin.ignore();
+
+                    for (size_t i = 0; i < producto.size(); i++) {
+                        if (producto[i].id == idbuscar) {
+                            encontrado = true;
+                            cout << "\nProducto actual: " << producto[i].nombre;
+
+                            char nuevonombre[50];
+                            cout << "\nIngrese el nuevo nombre del producto: ";
+                            cin.getline(nuevonombre, 50);
+                            convertirMayusculas(nuevonombre);
+                            strcpy(producto[i].nombre, nuevonombre);
+
+                            cout << "Nombre actualizado correctamente.\n";
+                            break;
+                        }
+                    }
+                    if (!encontrado) cout << "Producto no encontrado.\n";
+                    break;
+                }
+
+                case 2: {
+                    cout << "\nIngrese el ID del Producto a modificar: ";
+                    cin >> idbuscar;
+
+                    for (size_t i = 0; i < producto.size(); i++) {
+                        if (producto[i].id == idbuscar) {
+                            encontrado = true;
+                            cout << "\nProducto: " << producto[i].nombre;
+                            cout << "\nStock actual: " << producto[i].stock;
+
+                            int cantidad;
+                            do {
+                                cout << "\nIngrese la cantidad a agregar al Stock: ";
+                                cin >> cantidad;
+                                if (cantidad < 0) cout << "No se puede agregar stock negativo.\n";
+                            } while (cantidad < 0);
+
+                            producto[i].stock += cantidad;
+                            cout << "Stock actualizado correctamente.\n";
+                            break;
+                        }
+                    }
+                    if (!encontrado) cout << "Producto no encontrado.\n";
+                    break;
+                }
+
+                case 3: {
+                    cout << "\nIngrese el ID del Producto a modificar: ";
+                    cin >> idbuscar;
+
+                    for (size_t i = 0; i < producto.size(); i++) {
+                        if (producto[i].id == idbuscar) {
+                            encontrado = true;
+                            cout << "\nProducto: " << producto[i].nombre;
+                            cout << "\nPrecio actual: Q." << producto[i].precio;
+
+                            float nuevoPrecio;
+                            do {
+                                cout << "\nIngrese el nuevo Precio unitario: ";
+                                cin >> nuevoPrecio;
+                                if (nuevoPrecio < 0) cout << "El precio no puede ser negativo.\n";
+                            } while (nuevoPrecio < 0);
+
+                            producto[i].precio = nuevoPrecio;
+                            cout << "Precio actualizado correctamente.\n";
+                            break;
+                        }
+                    }
+                    if (!encontrado) cout << "Producto no encontrado.\n";
+                    break;
+                }
+
+                case 4: {
+                    cout << "\nIngrese el ID del Producto: ";
+                    cin >> idbuscar;
+
+                    for (size_t i = 0; i < producto.size(); i++) {
+                        if (producto[i].id == idbuscar) {
+                            encontrado = true;
+                            cout << "\nProducto: " << producto[i].nombre;
+                            cout << "\nEstado actual: " << (producto[i].estado ? "Habilitado" : "Deshabilitado");
+
+                            int estado;
+                            cout << "\nIngrese 1 para habilitar, 0 para deshabilitar: ";
+                            cin >> estado;
+                            producto[i].estado = (estado == 1);
+
+                            cout << "Estado actualizado correctamente.\n";
+                            break;
+                        }
+                    }
+                    if (!encontrado) cout << "Producto no encontrado.\n";
+                    break;
+                }
+
+                case 5:
+                    cout << "Saliendo del sistema...\n";
+                    break;
+
+                default:
+                    cout << "Opcion invalida.\n";
+            }
+
+            // Guardar cambios en archivo
+            ofstream archivoOut("productos.dat", ios::binary | ios::trunc);
+            for (size_t i = 0; i < producto.size(); i++) {
+                archivoOut.write((char*)&producto[i], sizeof(Productos));
+            }
+            archivoOut.close();
+
+        } while (opcion != 5);
+
+    } catch (const char* msg) {
+        cout << "Error: " << msg << endl;
     }
+}
 
-    Productos productos[500];
-    int total = 0;
-
-    // Cargar todos los productos en memoria
-    while (archivo.read((char*)&productos[total], sizeof(Productos))) {
-        total++;
-
-        if (total >= 500) {
-        cout << "Se alcanzo el límite maximo de productos (500).\n";
-        break;
-        }
-    }
-    archivo.close();
-
+void buscardatos(vector<Productos>& productos) {
     int opcion;
     do {
-        cout << "\n===== Sistema de Busqueda de Productos =====\n";
-        cout << "1. Buscar por Nombre\n";
-        cout << "2. Buscar por Codigo/ID\n";
+        cout << "\n===== Buscar Producto =====\n";
+        cout << "1. Buscar por ID\n";
+        cout << "2. Buscar por Nombre\n";
         cout << "3. Salir\n";
-        cout << "Seleccione una opcion: ";
+        cout << "Seleccione una opción: ";
         cin >> opcion;
-        cin.ignore();
 
-        bool encontrado = false;
-
-        switch (opcion) {
+        switch(opcion) {
             case 1: {
-                char nombrebuscar[40];
-                cout << "Ingrese el nombre a buscar: ";
-                cin.getline(nombrebuscar, 40);
-                convertirMayusculas(nombrebuscar);
-
-                for (int i = 0; i < total; i++) {
-                    if (productos[i].estado && compararCadenas(productos[i].nombre, nombrebuscar)) {
-                        cout << "\nID: " << productos[i].id;
-                        cout << "\nProducto: " << productos[i].nombre;
-                        cout << "\nCategoria: " << productos[i].categoria;
-                        cout << "\nStock: " << productos[i].stock;
-                        cout << "\nPrecio Unitario: Q." << productos[i].precio; 
-                        cout << "\nEstado del Producto: " << productos[i].estado << endl;
-                        encontrado = true;
-                    }
+                int id;
+                cout << "Ingrese el ID: ";
+                cin >> id;
+                Productos* p = buscarporcodigo(productos, id);
+                if (p) {
+                    cout << "\nProducto encontrado:\n";
+                    cout << "ID: " << p->id << "\nNombre: " << p->nombre
+                         << "\nCategoria: " << p->categoria
+                         << "\nStock: " << p->stock
+                         << "\nPrecio: Q." << p->precio << endl;
+                } else {
+                    cout << "Producto no encontrado.\n";
                 }
-
-                if (!encontrado) cout << "Producto no encontrado.\n";
                 break;
             }
-
             case 2: {
-                int codigobuscar;
-                cout << "Ingrese el ID a buscar: ";
-                cin >> codigobuscar;
-
-                for (int i = 0; i < total; i++) {
-                    if (productos[i].estado && productos[i].id == codigobuscar) {
-                        cout << "\nID: " << productos[i].id;
-                        cout << "\nProducto: " << productos[i].nombre;
-                        cout << "\nCategoria: " << productos[i].categoria;
-                        cout << "\nStock: " << productos[i].stock;
-                        cout << "\nPrecio Unitario: Q." <<productos[i].precio << endl;
-                        encontrado = true;
-                    }
+                string nombre;
+                cout << "Ingrese el nombre: ";
+                cin.ignore();
+                getline(cin, nombre);
+                Productos* p = buscarpornombre(productos, nombre);
+                if (p) {
+                    cout << "\nProducto encontrado:\n";
+                    cout << "ID: " << p->id << "\nNombre: " << p->nombre
+                         << "\nCategoria: " << p->categoria
+                         << "\nStock: " << p->stock
+                         << "\nPrecio: Q." << p->precio << endl;
+                } else {
+                    cout << "Producto no encontrado.\n";
                 }
-
-                if (!encontrado) cout << "Producto no encontrado.\n";
                 break;
             }
-
             case 3:
-                cout << "Saliendo del sistema...\n";
+                cout << "Saliendo del menu de búsqueda...\n";
                 break;
-
             default:
-                cout << "Opción inválida\n";
+                cout << "Opcion invalida.\n";
         }
     } while (opcion != 3);
-}
-
-void modificardatos() {
-    ifstream archivo("productos.dat", ios::binary);
-
-    if (!archivo) {
-        cout << "No se puede abrir el archivo.\n";
-        return;
-    }
-
-    Productos productos[500];
-    int total = 0;
-
-    // Cargar todos los productos en memoria
-    while (archivo.read((char*)&productos[total], sizeof(Productos))) {
-        total++;
-
-        if (total >= 500) {
-        cout << "Se alcanzo el límite maximo de productos (500).\n";
-        break;
-        }
-    }
-    archivo.close();
-
-    int opcion;
-    do{
-    cout << "\n===== Sistema de Modificacion de Productos =====\n";
-        cout << "1. Cambiar nombre de producto\n";
-        cout << "2. Sumar Stock\n";
-        cout << "3. Cambiar Precio unitario\n";
-        cout << "4. Habilitar oh desabilitar producto\n";
-        cout << "5. Salir\n";
-        cout << "Seleccione una opcion: ";
-        cin >> opcion;
-        cin.ignore();
-
-    int idbuscar;
-    bool encontrado = false;
-
-    switch(opcion){
-    
-    case 1:{
-    cout << "\nIngrese el ID del Producto a modificar: ";
-        cin >> idbuscar;
-        cin.ignore();
-
-        for (int i = 0; i < total; i++) {
-            if (productos[i].id == idbuscar) {
-                encontrado = true;
-                char nuevonombre[40]; 
-
-            // Mostrar datos originales
-            cout << "\nID: " << productos[i].id;
-            cout << "\nProducto: " << productos[i].nombre;
-            cout << "\nStock: " << productos[i].stock;
-
-        // Pedir nuevos datos
-        cout << "\nIngrese el nuevo nombre del producto: ";
-        cin.getline(nuevonombre, 40);
-        convertirMayusculas(nuevonombre);
-
-        int j = 0;
-                while (nuevonombre[j] != '\0' && j < 39) {
-                    productos[i].nombre[j] = nuevonombre[j];
-                    j++;
-                }
-                productos[i].nombre[j] = '\0';
-
-        cout << "Nombre de Producto actualizado correctamente.\n";
-        break;
-            }
-        }
-
-        if (!encontrado) cout << "Producto no encontrado.\n";
-        break;
-    }
-
-    case 2:{
-        cout << "\nIngrese el ID del Producto a modificar: ";
-        cin >> idbuscar;
-
-        for (int i = 0; i < total; i++) {
-            if (productos[i].id == idbuscar) {
-                encontrado = true;
-                int cantidad; 
-
-            // Mostrar datos originales
-            cout << "\nID: " << productos[i].id;
-            cout << "\nProducto: " << productos[i].nombre;
-            cout << "\nStock: " << productos[i].stock;
-
-        // Pedir nuevos datos
-        do {
-        cout << "\nIngrese la cantidad a agregar al Stock: ";
-        cin >> cantidad;
-
-        if (cantidad < 0) {
-            cout << "El stock no puede ser negativo. Intente de nuevo.\n";
-        }
-        } while (cantidad < 0);
-
-        productos[i].stock += cantidad;
-        cout << "Stock actualizado correctamente.\n";
-        break;
-            }
-        }
-        if (!encontrado) cout << "Producto no encontrado.\n";
-        break;
-    }
-
-    case 3:{
-        cout << "\nIngrese el ID del Producto a modificar: ";
-        cin >> idbuscar;
-        
-         for (int i = 0; i < total; i++) {
-                if (productos[i].id == idbuscar) {
-                encontrado = true;
-
-        cout << "\nID: " << productos[i].id;
-        cout << "\nProducto: " << productos[i].nombre;
-        cout << "\nPrecio Unitario: Q." << productos[i].precio;
-
-        do {
-        cout << "\nIngrese el nuevo Precio unitario del Producto: ";
-        cin >> productos[i].precio;
-        if (productos[i].precio < 0) {
-            cout << "El precio no puede ser negativo. Intente de nuevo.\n";
-            }
-        } while (productos[i].precio < 0);
-
-        cout << "Precio actualizado correctamente.\n";
-        break;
-        }
-    }
-        if (!encontrado) cout << "Producto no encontrado.\n";
-        break;
-    break;
-}
-
-    case 4: {
-        cout << "\nIngrese el ID del Producto: ";
-        cin >> idbuscar;
-
-        for (int i = 0; i < total; i++) {
-            if (productos[i].id == idbuscar) {
-            encontrado = true;
-            
-            cout << "\nID: " << productos[i].id;
-            cout << "\nProducto: " << productos[i].nombre;
-            cout << "\nEstado del Producto: " << productos[i].estado;
-
-            cout << "\nIngrese 1 para habilitar, 0 para deshabilitar: ";
-            int estado;
-            cin >> estado;
-
-            productos[i].estado = (estado == 1);
-            cout << "Estado actualizado correctamente.\n";
-        break;
-        }
-
-    }
-        if (!encontrado) cout << "Producto no encontrado.\n";
-            break;
-}
-        
-    case 5:
-        cout << "Saliendo del sistema..." << endl; 
-        break;
-
-    default: 
-        cout << "Opción inválida" << endl; 
-        continue;
-    }
-
-        // Reescribir el archivo directamente
-        ofstream archivoOut("productos.dat", ios::binary);
-        for (int i = 0; i < total; i++) {
-        archivoOut.write((char*)&productos[i], sizeof(Productos));
-    }
-        archivoOut.close();
-
-    }while(opcion != 5);
 }
