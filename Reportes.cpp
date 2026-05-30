@@ -7,6 +7,7 @@
 #include <climits>
 #include <cstring>   // para strcmp
 #include <cstdlib>   // para atoi
+#include <fstream>
 using namespace std;
 
 // Productos con menor stock
@@ -54,7 +55,7 @@ void reporteVentasDia(const vector<Ventas>& ventas, const string& fecha) {
     cout << "\n--- Ventas del dia " << fecha << " ---\n";
     double totalDia = 0;
     for (const auto& v : ventas) {
-        if (fecha == v.fecha) { // comparar string con char[]
+        if (strcmp(fecha.c_str(), v.fecha) == 0) { // comparar string con char[]
             totalDia += v.total;
             cout << "Cliente: " << v.cliente << " | Total: " << fixed << setprecision(2) << v.total << endl;
         }
@@ -62,57 +63,98 @@ void reporteVentasDia(const vector<Ventas>& ventas, const string& fecha) {
     cout << "TOTAL DEL DIA: " << fixed << setprecision(2) << totalDia << endl;
 }
 
-// Ventas por mes (matriz)
-void reporteVentasMes(const vector<Ventas>& ventas, int ventasPorMes[12]) {
-    for (int i = 0; i < 12; i++) ventasPorMes[i] = 0;
-    for (const auto& v : ventas) {
-        char mesStr[3];
-        mesStr[0] = v.fecha[5];
-        mesStr[1] = v.fecha[6];
-        mesStr[2] = '\0';
-        int mes = atoi(mesStr) - 1; // suponiendo formato YYYY-MM-DD
-        if (mes >= 0 && mes < 12) ventasPorMes[mes]++;
+// Ventas por mes y día (matriz con char[])
+void reporteVentasMesDia(const std::vector<Ventas>& ventas, int ventasPorMesDia[12][31]) {
+    // Inicializar matriz
+    for (int mes = 0; mes < 12; mes++) {
+        for (int dia = 0; dia < 31; dia++) {
+            ventasPorMesDia[mes][dia] = 0;
+        }
     }
-    cout << "\n--- Ventas por mes ---\n";
-    for (int i = 0; i < 12; i++) {
-        cout << "Mes " << i+1 << ": " << ventasPorMes[i] << " ventas\n";
-    }
-}
 
-// Ordenar productos por precio
-void ordenarPorPrecio(vector<Productos>& productos, bool ascendente) {
-    sort(productos.begin(), productos.end(), [ascendente](const Productos& a, const Productos& b) {
-        return ascendente ? a.precio < b.precio : a.precio > b.precio;
-    });
-}
-
-// Ordenar productos por stock
-void ordenarPorStock(vector<Productos>& productos, bool ascendente) {
-    sort(productos.begin(), productos.end(), [ascendente](const Productos& a, const Productos& b) {
-        return ascendente ? a.stock < b.stock : a.stock > b.stock;
-    });
-}
-
-// Ordenar productos por ventas acumuladas
-void ordenarPorVentas(vector<Productos>& productos, const vector<Ventas>& ventas, bool ascendente) {
-    vector<int> acumulado(productos.size(), 0);
-
+    // Recorrer ventas
     for (const auto& v : ventas) {
-        for (int i = 0; i < v.numProductos; i++) {
-            for (size_t j = 0; j < productos.size(); j++) {
-                if (strcmp(v.productos[i], productos[j].nombre) == 0) {
-                    acumulado[j] += v.cantidades[i];
-                }
+        char mesStr[3] = { v.fecha[5], v.fecha[6], '\0' };
+        char diaStr[3] = { v.fecha[8], v.fecha[9], '\0' };
+
+        int mes = atoi(mesStr) - 1; // 0-11
+        int dia = atoi(diaStr) - 1; // 0-30
+
+        if (mes >= 0 && mes < 12 && dia >= 0 && dia < 31) {
+            ventasPorMesDia[mes][dia]++;
+        }
+    }
+
+    // Mostrar resultados ordenados
+    cout << "\n===== Ventas por mes y dia =====\n";
+    for (int mes = 0; mes < 12; mes++) {
+        int totalMes = 0;
+        cout << "\nMes " << mes + 1 << ":\n";
+        cout << "Dia  | Ventas\n";
+        cout << "-----+-------\n";
+
+        for (int dia = 0; dia < 31; dia++) {
+            if (ventasPorMesDia[mes][dia] > 0) {
+                cout << setw(3) << dia + 1 << "  | "
+                          <<setw(5) << ventasPorMesDia[mes][dia] << "\n";
+                totalMes += ventasPorMesDia[mes][dia];
             }
         }
+
+        if (totalMes > 0) {
+            cout << "-----+-------\n";
+            cout << "Total del mes: " << totalMes << " ventas\n";
+        }
+    }
+}
+
+
+void mostrarEstadisticas(const vector<Productos>& productos) {
+    if (productos.empty()) {
+        cout << "No hay productos en el inventario.\n";
+        return;
     }
 
-    sort(productos.begin(), productos.end(), [&](const Productos& a, const Productos& b) {
-        int ventasA = 0, ventasB = 0;
-        for (size_t i = 0; i < productos.size(); i++) {
-            if (strcmp(a.nombre, productos[i].nombre) == 0) ventasA = acumulado[i];
-            if (strcmp(b.nombre, productos[i].nombre) == 0) ventasB = acumulado[i];
+    int totalProductos = 0;
+    int totalStock = 0;
+    double valorInventario = 0;
+
+    for (size_t i = 0; i < productos.size(); i++) {
+        if (productos[i].estado) {
+            totalProductos++;
+            totalStock += productos[i].stock;
+            valorInventario += productos[i].stock * productos[i].precio;
         }
-        return ascendente ? ventasA < ventasB : ventasA > ventasB;
-    });
+    }
+
+    cout << "\n===== ESTADÍSTICAS GENERALES =====\n";
+    cout << "Productos activos: " << totalProductos << "\n";
+    cout << "Stock total: " << totalStock << "\n";
+    cout << "Valor total del inventario: Q." << fixed << setprecision(2) << valorInventario << "\n";
+    cout << "Promedio de precio: Q." << (valorInventario / (totalStock > 0 ? totalStock : 1)) << "\n";
+}
+
+void exportarReporteTXT(const vector<Productos>& productos) {
+    ofstream archivo("reporte_inventario.txt");
+    if (!archivo) {
+        cout << "Error al crear el archivo de reporte.\n";
+        return;
+    }
+
+    archivo << "===== REPORTE DE INVENTARIO =====\n";
+    archivo << fixed << setprecision(2);
+
+    for (size_t i = 0; i < productos.size(); i++) {
+        if (productos[i].estado) {
+            archivo << "ID: " << productos[i].id << "\n";
+            archivo << "Producto: " << productos[i].nombre << "\n";
+            archivo << "Categoria: " << productos[i].categoria << "\n";
+            archivo << "Stock: " << productos[i].stock << "\n";
+            archivo << "Precio Unitario: Q." << productos[i].precio << "\n";
+            archivo << "---------------------------------------------\n";
+        }
+    }
+
+    archivo.close();
+    cout << "Reporte exportado correctamente a reporte_inventario.txt\n";
 }

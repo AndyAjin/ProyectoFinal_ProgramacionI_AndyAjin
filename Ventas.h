@@ -7,6 +7,7 @@
 using namespace std;
 
 struct Ventas {
+    int idVenta;               // Variable para guardar venta con ID
     char cliente[50];          // nombre del cliente
     int tipopago;              // tipo de pago (1=efectivo, 2=tarjeta, etc.)
     char productos[10][50];    // hasta 10 productos, nombre máx 50 chars

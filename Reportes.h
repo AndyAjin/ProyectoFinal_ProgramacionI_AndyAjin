@@ -2,6 +2,7 @@
 #define REPORTES_H
 
 #include <vector>
+#include <string>
 #include "Productos.h"
 #include "Ventas.h"
 using namespace std;
@@ -16,11 +17,12 @@ void reporteMasVendidos(const vector<Productos>& productos, const vector<Ventas>
 void reporteVentasDia(const vector<Ventas>& ventas, const string& fecha);
 
 // Ventas por mes (matriz)
-void reporteVentasMes(const vector<Ventas>& ventas, int ventasPorMes[12]);
+void reporteVentasMesDia(const vector<Ventas>& ventas, int ventasPorMesDia[12][31]);
 
-// Ordenar productos
-void ordenarPorPrecio(vector<Productos>& productos, bool ascendente);
-void ordenarPorStock(vector<Productos>& productos, bool ascendente);
-void ordenarPorVentas(vector<Productos>& productos, const vector<Ventas>& ventas, bool ascendente);
+//Funcion para mostrar estadisticas del sistema
+void mostrarEstadisticas(const vector<Productos>& productos);
+
+//Exporta el reporte a un archivo txt
+void exportarReporteTXT(const vector<Productos>& productos);
 
 #endif

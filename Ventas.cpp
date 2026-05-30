@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
-#include <ctime>
+#include <ctime>     // para strftime
 #include <cstring>   // para strcpy
 using namespace std;
 
@@ -24,6 +24,19 @@ void cargarVentas(vector<Ventas>& ventas) {
 void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
     try {
         Ventas venta;
+        int ultimoID = 0;
+
+        //Obtener el último ID de venta desde el archivo
+        ifstream archivoIn("ventas.dat", ios::binary);
+        Ventas temp;
+        while (archivoIn.read((char*)&temp, sizeof(Ventas))) {
+            ultimoID = temp.idVenta;
+        }
+        archivoIn.close();
+
+        // Asignar un nuevo ID único
+        venta.idVenta = ultimoID + 1;
+
         ofstream archivo("ventas.dat", ios::app | ios::binary);
         if (!archivo) throw "No se puede abrir el archivo ventas.dat";
 
@@ -34,6 +47,7 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
 
         cin.ignore();
         cout << "\n--- Registro de Venta ---\n";
+        cout << "ID de la venta: " << venta.idVenta << endl;
         cout << "Nombre del cliente: ";
         string clienteTemp;
         getline(cin, clienteTemp);
@@ -47,10 +61,11 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
 
         do {
             int id;
-            cout << "Ingrese el ID: ";
+            cout << "Ingrese el ID del Producto: ";
             cin >> id;
 
             Productos* p = buscarporcodigo(productos, id);
+            cout << "Producto: " << p->nombre << endl;
             if (!p) {
                 cout << "Producto no encontrado.\n";
                 continue;
@@ -130,7 +145,7 @@ void mostrarventa(const vector<Ventas>& ventas) {
     for (size_t i = 0; i < ventas.size(); i++) {
         const Ventas& v = ventas[i];
         cout << "\nFecha: " << v.fecha;
-        cout << "\nVenta #" << i + 1 << endl;
+        cout << "\nID Venta: " << v.idVenta << endl;
         cout << "Cliente: " << v.cliente;
         cout << "\nTipo de Pago: ";
         mostrarTipoPago(v.tipopago);
