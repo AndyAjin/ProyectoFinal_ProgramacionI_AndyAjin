@@ -60,36 +60,44 @@ void registrarproducto(vector<Productos>& producto) {
         do {
             cout << "Id del producto: ";
             cin >> nuevo.id;
+            if (nuevo.id < 0) throw "El ID no puede ser un numero negativo.\n";
             if (cin.fail()) throw "El ID debe ser un numero\n";
             if (existeID(producto, nuevo.id)) {
-                cout << "Ese ID ya existe. Intente con otro.\n";
+                throw "Ese ID ya existe. Intente con otro.\n";
             }
         } while (existeID(producto, nuevo.id));
 
         cin.ignore();
         cout << "Nombre del producto: ";
         cin.getline(nuevo.nombre, 50);
+        if (strlen(nuevo.nombre) == 0) throw "El nombre no puede estar vacío.";
         convertirMayusculas(nuevo.nombre);
 
         cout << "Categoria del producto: ";
         cin.getline(nuevo.categoria, 50);
+        if (strlen(nuevo.categoria) == 0) throw "La categoría no puede estar vacía.";
         convertirMinusculas(nuevo.categoria);
 
         do {
             cout << "Ingrese el Stock del Producto: ";
             cin >> nuevo.stock;
+            if (cin.fail()) throw "El Stock debe ser un numero\n";
             if (nuevo.stock < 0) throw "El stock no puede ser negativo.\n";
-        } while (nuevo.stock < 0);
+            if (nuevo.stock > 10000) throw "El stock no puede superar 10,000 unidades.\n";
+        } while (nuevo.stock < 0 || nuevo.stock > 10000);
 
         do {
             cout << "Ingrese el Precio unitario del Producto: ";
             cin >> nuevo.precio;
+            if (cin.fail()) throw "El Precio debe ser un numero\n";
             if (nuevo.precio < 0) throw "El precio no puede ser negativo.\n";
-        } while (nuevo.precio < 0);
+            if (nuevo.precio > 100000) throw "El precio es demasiado alto.\n";
+        } while (nuevo.precio < 0 || nuevo.precio > 100000);
 
         nuevo.estado = true;
 
         archivo.write((char*)&nuevo, sizeof(Productos));
+        if (!archivo.good()) throw "Error al guardar el producto en el archivo.";
         archivo.close();
         producto.push_back(nuevo);
         cout << "Datos de producto registrados correctamente.\n";
@@ -137,6 +145,8 @@ void modificardatos(vector<Productos>& producto, int id) {
             cout << "5. Salir\n";
             cout << "Seleccione una opcion: ";
             cin >> opcion;
+            if (cin.fail()) throw "La opcion debe ser un numero\n";
+            if (opcion < 0) throw "La opcion no puede ser un numero negativo.\n";
             cin.ignore();
 
             int idbuscar;
@@ -146,6 +156,8 @@ void modificardatos(vector<Productos>& producto, int id) {
                 case 1: {
                     cout << "\nIngrese el ID del Producto a modificar: ";
                     cin >> idbuscar;
+                    if (cin.fail()) throw "El ID debe ser un numero\n";
+                    if (idbuscar < 0) throw "El ID no puede ser un numero negativo.\n";
                     cin.ignore();
 
                     for (size_t i = 0; i < producto.size(); i++) {
@@ -170,6 +182,8 @@ void modificardatos(vector<Productos>& producto, int id) {
                 case 2: {
                     cout << "\nIngrese el ID del Producto a modificar: ";
                     cin >> idbuscar;
+                    if (cin.fail()) throw "El ID debe ser un numero\n";
+                    if (idbuscar < 0) throw "El ID no puede ser un numero negativo.\n";
 
                     for (size_t i = 0; i < producto.size(); i++) {
                         if (producto[i].id == idbuscar) {
@@ -181,7 +195,8 @@ void modificardatos(vector<Productos>& producto, int id) {
                             do {
                                 cout << "\nIngrese la cantidad a agregar al Stock: ";
                                 cin >> cantidad;
-                                if (cantidad < 0) cout << "No se puede agregar stock negativo.\n";
+                                if (cantidad < 0) throw "El stock no puede ser negativo.\n";
+                                if (cantidad > 10000) throw "El stock no puede superar 10,000 unidades.\n";
                             } while (cantidad < 0);
 
                             producto[i].stock += cantidad;
@@ -196,6 +211,8 @@ void modificardatos(vector<Productos>& producto, int id) {
                 case 3: {
                     cout << "\nIngrese el ID del Producto a modificar: ";
                     cin >> idbuscar;
+                    if (cin.fail()) throw "El ID debe ser un numero\n";
+                    if (idbuscar < 0) throw "El ID no puede ser un numero negativo.\n";
 
                     for (size_t i = 0; i < producto.size(); i++) {
                         if (producto[i].id == idbuscar) {
@@ -207,7 +224,8 @@ void modificardatos(vector<Productos>& producto, int id) {
                             do {
                                 cout << "\nIngrese el nuevo Precio unitario: ";
                                 cin >> nuevoPrecio;
-                                if (nuevoPrecio < 0) cout << "El precio no puede ser negativo.\n";
+                                if (nuevoPrecio < 0) throw "El precio no puede ser negativo.\n";
+                                if (nuevoPrecio > 100000) throw "El precio es demasiado alto.\n";
                             } while (nuevoPrecio < 0);
 
                             producto[i].precio = nuevoPrecio;
@@ -222,6 +240,8 @@ void modificardatos(vector<Productos>& producto, int id) {
                 case 4: {
                     cout << "\nIngrese el ID del Producto: ";
                     cin >> idbuscar;
+                    if (cin.fail()) throw "El ID debe ser un numero\n";
+                    if (idbuscar < 0) throw "El ID no puede ser un numero negativo.\n";
 
                     for (size_t i = 0; i < producto.size(); i++) {
                         if (producto[i].id == idbuscar) {
@@ -232,8 +252,10 @@ void modificardatos(vector<Productos>& producto, int id) {
                             int estado;
                             cout << "\nIngrese 1 para habilitar, 0 para deshabilitar: ";
                             cin >> estado;
-                            producto[i].estado = (estado == 1);
+                            if (cin.fail()) throw "Debe ingresar un número (1 o 0).";
+                            if (estado != 0 && estado != 1) throw "Solo se permite ingresar 1 o 0.";
 
+                            producto[i].estado = (estado == 1);
                             cout << "Estado actualizado correctamente.\n";
                             break;
                         }
@@ -260,11 +282,14 @@ void modificardatos(vector<Productos>& producto, int id) {
         } while (opcion != 5);
 
     } catch (const char* msg) {
-        cout << "Error: " << msg << endl;
+    cout << "Error: " << msg << endl;
+    cin.clear();              // limpia el estado de error de cin
+    cin.ignore(1000, '\n');   // descarta la entrada inválida
     }
 }
 
 void buscardatos(vector<Productos>& productos) {
+    try{
     int opcion;
     do {
         cout << "\n===== Buscar Producto =====\n";
@@ -279,6 +304,9 @@ void buscardatos(vector<Productos>& productos) {
                 int id;
                 cout << "Ingrese el ID: ";
                 cin >> id;
+                if (cin.fail()) throw "El ID debe ser un numero\n";
+                if (id < 0) throw "El ID no puede ser un numero negativo.\n";
+
                 Productos* p = buscarporcodigo(productos, id);
                 if (p) {
                     cout << "\nProducto encontrado:\n";
@@ -315,4 +343,10 @@ void buscardatos(vector<Productos>& productos) {
                 cout << "Opcion invalida.\n";
         }
     } while (opcion != 3);
+
+    } catch (const char* msg) {
+        cout << "Error: " << msg << endl;
+        cin.clear();
+        cin.ignore(1000, '\n');
+    }
 }

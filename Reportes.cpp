@@ -108,7 +108,6 @@ void reporteVentasMesDia(const std::vector<Ventas>& ventas, int ventasPorMesDia[
     }
 }
 
-
 void mostrarEstadisticas(const vector<Productos>& productos) {
     if (productos.empty()) {
         cout << "No hay productos en el inventario.\n";
@@ -127,7 +126,7 @@ void mostrarEstadisticas(const vector<Productos>& productos) {
         }
     }
 
-    cout << "\n===== ESTADÍSTICAS GENERALES =====\n";
+    cout << "\n===== ESTADISTICAS GENERALES =====\n";
     cout << "Productos activos: " << totalProductos << "\n";
     cout << "Stock total: " << totalStock << "\n";
     cout << "Valor total del inventario: Q." << fixed << setprecision(2) << valorInventario << "\n";

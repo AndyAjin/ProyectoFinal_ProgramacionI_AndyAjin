@@ -99,16 +99,30 @@ void ordenarPorVentas(vector<Productos>& productos, const vector<Ventas>& ventas
 }
 
 void reiniciarInventario(vector<Productos>& productos) {
+    try{
     char confirmacion;
     cout << "Esta seguro que desea reiniciar el inventario (S/N): ";
     cin >> confirmacion;
 
+    // Validar primero si la entrada es correcta
+            if(cin.fail()) throw "Debe ingresar una letra (S/N)";
+            if (confirmacion != 'S' && confirmacion != 's' &&
+                confirmacion != 'N' && confirmacion != 'n') {
+                throw "Solo se permite ingresar S o N.";
+            }
+
     if (toupper(confirmacion) == 'S') {
         productos.clear();
         ofstream archivo("productos.dat", ios::binary | ios::trunc);
+        if (!archivo) throw "No se pudo reiniciar el archivo productos.dat.";
         archivo.close();
         cout << "Inventario reiniciado correctamente.\n";
     } else {
         cout << "Operacion cancelada.\n";
+    }
+    } catch (const char* msg) {
+    cout << "Error: " << msg << endl;
+    cin.clear();              // limpia el estado de error de cin
+    cin.ignore(1000, '\n');   // descarta la entrada inválida
     }
 }

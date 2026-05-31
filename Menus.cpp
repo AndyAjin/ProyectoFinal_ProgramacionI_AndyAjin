@@ -8,6 +8,7 @@
 using namespace std;
 
 void gestionproductos(vector<Productos>& producto) { 
+try{
     int opcion;
     do {
         cout << "\n===== Sistema de Inventario =====\n";
@@ -18,24 +19,28 @@ void gestionproductos(vector<Productos>& producto) {
         cout << "5. Salir\n";
         cout << "Seleccione una opcion: ";
         cin >> opcion;
+        if(cin.fail()) throw "La opcion debe ser un numero";
+        cin.ignore(1000, '\n');
 
         switch (opcion) {
             case 1: registrarproducto(producto); break;
             case 2: mostrarproducto(producto); break;
             case 3: buscardatos(producto); break;
-            case 4: {
-                int id;
-                modificardatos(producto, id);
-                break;
-            }
+            case 4: modificardatos(producto, 0); break;
             case 5: cout << "Saliendo del sistema...\n"; break;
             default: cout << "Opcion invalida\n"; continue;
         }
     } while (opcion != 5);
+
+    } catch (const char* msg) {
+    cout << "Error: " << msg << endl;
+    cin.clear();              // limpia el estado de error de cin
+    cin.ignore(1000, '\n');   // descarta la entrada inválida
+    }
 }
 
 void gestionventas(vector<Productos>& productos, vector<Ventas>& ventas){
-
+try{
     int opcion;
     do {
         cout << "\n===== Sistema de Ventas =====\n";
@@ -44,6 +49,8 @@ void gestionventas(vector<Productos>& productos, vector<Ventas>& ventas){
         cout << "3. Salir" << endl;
         cout << "Seleccione una opcion: ";
         cin >> opcion;
+        if(cin.fail()) throw "La opcion debe ser un numero";
+        cin.ignore(1000, '\n');
 
         switch (opcion) {
             case 1: 
@@ -63,9 +70,16 @@ void gestionventas(vector<Productos>& productos, vector<Ventas>& ventas){
             continue;
         }
     } while (opcion != 3);
+
+    } catch (const char* msg) {
+    cout << "Error: " << msg << endl;
+    cin.clear();              // limpia el estado de error de cin
+    cin.ignore(1000, '\n');   // descarta la entrada inválida
+    }
 }
 
 void gestionreportes(vector<Productos>& productos, vector<Ventas>& ventas) {
+try{
     int opcion;
     do {
         cout << "\n===== MODULO DE REPORTES =====\n";
@@ -78,6 +92,8 @@ void gestionreportes(vector<Productos>& productos, vector<Ventas>& ventas) {
         cout << "7. Volver al menu principal\n";
         cout << "Seleccione una opcion: ";
         cin >> opcion;
+        if(cin.fail()) throw "La opcion debe ser un numero";
+        cin.ignore(1000, '\n');
 
         switch(opcion) {
             case 1:
@@ -92,6 +108,9 @@ void gestionreportes(vector<Productos>& productos, vector<Ventas>& ventas) {
                 string fecha;
                 cout << "Ingrese la fecha (YYYY-MM-DD): ";
                 cin >> fecha;
+                    if (fecha.size() != 10 || fecha[4] != '-' || fecha[7] != '-') {
+                    throw "La fecha debe tener el formato YYYY-MM-DD.";
+                    }
                 reporteVentasDia(ventas, fecha);
                 break;
             }
@@ -117,9 +136,16 @@ void gestionreportes(vector<Productos>& productos, vector<Ventas>& ventas) {
                 cout << "Opcion invalida.\n";
         }
     } while(opcion != 7);
+
+    } catch (const char* msg) {
+    cout << "Error: " << msg << endl;
+    cin.clear();              // limpia el estado de error de cin
+    cin.ignore(1000, '\n');   // descarta la entrada inválida
+    }
 }
 
 void gestionorden(vector<Productos>& productos, vector<Ventas>& ventas){
+try{
     int opcion;
     do {
         cout << "\n===== MODULO DE REPORTES =====\n";
@@ -130,12 +156,17 @@ void gestionorden(vector<Productos>& productos, vector<Ventas>& ventas){
         cout << "5. Volver al menu principal\n";
         cout << "Seleccione una opcion: ";
         cin >> opcion;
+        if(cin.fail()) throw "La opcion debe ser un numero";
+        cin.ignore(1000, '\n');
+
 
         switch(opcion) {
             case 1:{
                 int asc;
                 cout << "Ordenar por precio (1=Ascendente, 0=Descendente): ";
                 cin >> asc;
+                if (cin.fail()) throw "Debe ingresar un número (1 o 0).";
+                if (asc != 0 && asc != 1) throw "Solo se permite ingresar 1 o 0.";
                 ordenarPorPrecio(productos, asc == 1);
                 cout << "\nProductos ordenados por precio.\n";
                 break;
@@ -145,6 +176,8 @@ void gestionorden(vector<Productos>& productos, vector<Ventas>& ventas){
                 int asc;
                 cout << "Ordenar por stock (1=Ascendente, 0=Descendente): ";
                 cin >> asc;
+                if (cin.fail()) throw "Debe ingresar un número (1 o 0).";
+                if (asc != 0 && asc != 1) throw "Solo se permite ingresar 1 o 0.";
                 ordenarPorStock(productos, asc == 1);
                 cout << "\nProductos ordenados por stock.\n";
                 break;
@@ -154,6 +187,8 @@ void gestionorden(vector<Productos>& productos, vector<Ventas>& ventas){
                 int asc;
                 cout << "Ordenar por ventas acumuladas (1=Ascendente, 0=Descendente): ";
                 cin >> asc;
+                if (cin.fail()) throw "Debe ingresar un número (1 o 0).";
+                if (asc != 0 && asc != 1) throw "Solo se permite ingresar 1 o 0.";
                 ordenarPorVentas(productos, ventas, asc == 1);
                 cout << "\nProductos ordenados por ventas acumuladas.\n";
                 break;
@@ -171,9 +206,16 @@ void gestionorden(vector<Productos>& productos, vector<Ventas>& ventas){
                 cout << "Opcion invalida.\n";
         }
     } while (opcion != 5);
+
+    } catch (const char* msg) {
+    cout << "Error: " << msg << endl;
+    cin.clear();              // limpia el estado de error de cin
+    cin.ignore(1000, '\n');   // descarta la entrada inválida
+    }
 }
 
 void menu() {
+try{
     int opcion;
     vector<Productos> productos;
     vector<Ventas> ventas;
@@ -191,6 +233,8 @@ void menu() {
         cout << "5. Salir\n";
         cout << "Seleccione una opcion: ";
         cin >> opcion;
+        if(cin.fail()) throw "La opcion debe ser un numero";
+        cin.ignore(1000, '\n');
 
         switch (opcion) {
             case 1: gestionproductos(productos); break;
@@ -201,4 +245,10 @@ void menu() {
             default: cout << "Opcion invalida\n"; continue;
         }
     } while (opcion != 5);
+
+     } catch (const char* msg) {
+    cout << "Error: " << msg << endl;
+    cin.clear();              // limpia el estado de error de cin
+    cin.ignore(1000, '\n');   // descarta la entrada inválida
+    }
 }

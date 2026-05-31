@@ -51,6 +51,14 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
         cout << "Nombre del cliente: ";
         string clienteTemp;
         getline(cin, clienteTemp);
+        if (clienteTemp.empty()) throw "El nombre no puede estar vacío.";
+
+        // Validar que todos los caracteres sean letras o espacios
+        for (size_t i = 0; i < clienteTemp.size(); i++) {
+            if (!isalpha(clienteTemp[i]) && clienteTemp[i] != ' ') {
+                throw "El nombre solo puede contener letras.";
+            }
+        }
         Mayusculas(clienteTemp);
         strncpy(venta.cliente, clienteTemp.c_str(), sizeof(venta.cliente));
         venta.cliente[sizeof(venta.cliente)-1] = '\0';
@@ -63,22 +71,24 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
             int id;
             cout << "Ingrese el ID del Producto: ";
             cin >> id;
+            if (cin.fail()) throw "El ID debe ser un numero\n";
+            if (id < 0) throw "El ID no puede ser un numero negativo.\n";
 
             Productos* p = buscarporcodigo(productos, id);
-            cout << "Producto: " << p->nombre << endl;
             if (!p) {
                 cout << "Producto no encontrado.\n";
                 continue;
             }
+            cout << "Producto: " << p->nombre << endl;
 
             int cantidad;
             do {
                 cout << "Cantidad: ";
                 cin >> cantidad;
-                if (cantidad <= 0) {
-                    cout << "Error: la cantidad debe ser mayor a 0\n";
-                    continue;
-                }
+                if (cin.fail()) throw "El Stock debe ser un numero\n";
+                if (cantidad <= 0 ) throw "La cantidad debe ser mayor a 0.\n";
+                if (cantidad > 10000) throw "El stock no puede superar 10,000 unidades.\n";
+                
                 if (cantidad > p->stock) {
                     cout << "Error: stock insuficiente. Stock disponible: " << p->stock << endl;
                     continue;
@@ -100,18 +110,29 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
 
             cout << "Desea agregar otro producto (S/N) ";
             cin >> continuar;
+            if (cin.fail()) throw "Debe ingresar una letra (S/N).";
             cin.ignore();
+
+            // Validar que solo sea S o N (mayúscula o minúscula)
+            if (continuar != 'S' && continuar != 's' &&
+                continuar != 'N' && continuar != 'n') {
+                throw "Solo se permite ingresar S o N.";
+            }
 
         } while ((continuar == 'S' || continuar == 's') && venta.numProductos < 10);
 
         if (venta.numProductos == 0) {
-            cout << "No se registró ningun producto.\n";
+            cout << "No se registro ningun producto.\n";
             return;
         }
 
         do {
             cout << "Tipo de pago (1=Efectivo, 2=Tarjeta, 3=Transferencia): ";
             cin >> venta.tipopago;
+            if (cin.fail()) throw "El tipo de pago debe ser un numero\n";
+            if (venta.tipopago != 1 && venta.tipopago != 2 && venta.tipopago != 3){
+                throw "Solo se permite ingresar 1, 2 o 3.";
+            }
         } while (venta.tipopago < 1 || venta.tipopago > 3);
 
         venta.iva = calculariva(venta.subtotal);
@@ -136,7 +157,9 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
         cout << "Venta registrada correctamente.\n";
 
     } catch (const char* msg) {
-        cout << "Error: " << msg << endl;
+    cout << "Error: " << msg << endl;
+    cin.clear();              // limpia el estado de error de cin
+    cin.ignore(1000, '\n');   // descarta la entrada inválida
     }
 }
 
