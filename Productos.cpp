@@ -7,11 +7,15 @@
 #include <cstring>
 using namespace std;
 
+/* Funciones de carga y validación */
+
+// Carga todos los productos desde el archivo binario "productos.dat"
+// y los guarda en el vector. Si el archivo no existe, muestra aviso.
 void cargarProductos(vector<Productos>& productos) {
-    productos.clear();
+    productos.clear();//Limpia el listado de productos para no generar problemas al cargar el nuevo
     ifstream archivo("productos.dat", ios::binary);
     if (!archivo) {
-        cout << "(Aviso) No hay productos registrados aún.\n";
+        cout << "(Aviso) No hay productos registrados aun.\n";
         return;
     }
     Productos p;
@@ -21,6 +25,7 @@ void cargarProductos(vector<Productos>& productos) {
     archivo.close();
 }
 
+// Verifica si un ID ya existe en el vector de productos.
 bool existeID(const vector<Productos>& productos, int idBuscar) {
     for (size_t i = 0; i < productos.size(); i++) {
         if (productos[i].id == idBuscar && productos[i].estado) {
@@ -30,6 +35,7 @@ bool existeID(const vector<Productos>& productos, int idBuscar) {
     return false;
 }
 
+// Busca un producto por su código (ID).
 Productos* buscarporcodigo(vector<Productos>& producto, int id) {
     for (size_t i = 0; i < producto.size(); i++) {
         if (producto[i].id == id && producto[i].estado) {
@@ -39,6 +45,7 @@ Productos* buscarporcodigo(vector<Productos>& producto, int id) {
     return NULL;
 }
 
+// Busca un producto por su nombre (ignorando mayúsculas/minúsculas).
 Productos* buscarpornombre(vector<Productos>& producto, string nombre) {
     Mayusculas(nombre);
     for (size_t i = 0; i < producto.size(); i++) {
@@ -49,6 +56,9 @@ Productos* buscarpornombre(vector<Productos>& producto, string nombre) {
     return NULL;
 }
 
+/* Funciones de registro y visualización */
+
+// Registra un nuevo producto en el vector y lo guarda en el archivo.
 void registrarproducto(vector<Productos>& producto) {
     try {
         Productos nuevo;
@@ -70,12 +80,12 @@ void registrarproducto(vector<Productos>& producto) {
         cin.ignore();
         cout << "Nombre del producto: ";
         cin.getline(nuevo.nombre, 50);
-        if (strlen(nuevo.nombre) == 0) throw "El nombre no puede estar vacío.";
+        if (strlen(nuevo.nombre) == 0) throw "El nombre no puede estar vacio.";
         convertirMayusculas(nuevo.nombre);
 
         cout << "Categoria del producto: ";
         cin.getline(nuevo.categoria, 50);
-        if (strlen(nuevo.categoria) == 0) throw "La categoría no puede estar vacía.";
+        if (strlen(nuevo.categoria) == 0) throw "La categoría no puede estar vacia.";
         convertirMinusculas(nuevo.categoria);
 
         do {
@@ -109,6 +119,7 @@ void registrarproducto(vector<Productos>& producto) {
     }
 }
 
+// Muestra todos los productos activos en el vector.
 void mostrarproducto(const vector<Productos>& productos) {
     if (productos.empty()) {
         cout << "\nNo existe informacion almacenada.\n";
@@ -131,6 +142,10 @@ void mostrarproducto(const vector<Productos>& productos) {
     }
 }
 
+/*  Funciones de modificación */
+
+// Permite modificar datos de un producto existente.
+// Opciones: cambiar nombre, sumar stock, cambiar precio, habilitar/deshabilitar.
 void modificardatos(vector<Productos>& producto, int id) {
     try {
         if (producto.empty()) throw "No hay productos cargados.";
@@ -252,7 +267,7 @@ void modificardatos(vector<Productos>& producto, int id) {
                             int estado;
                             cout << "\nIngrese 1 para habilitar, 0 para deshabilitar: ";
                             cin >> estado;
-                            if (cin.fail()) throw "Debe ingresar un número (1 o 0).";
+                            if (cin.fail()) throw "Debe ingresar un numero (1 o 0).";
                             if (estado != 0 && estado != 1) throw "Solo se permite ingresar 1 o 0.";
 
                             producto[i].estado = (estado == 1);
@@ -288,6 +303,8 @@ void modificardatos(vector<Productos>& producto, int id) {
     }
 }
 
+// Muestra opciones de búsqueda de productos (por id o nombre).
+// Sirve como menú de búsqueda dentro del sistema.
 void buscardatos(vector<Productos>& productos) {
     try{
     int opcion;
@@ -337,7 +354,7 @@ void buscardatos(vector<Productos>& productos) {
                 break;
             }
             case 3:
-                cout << "Saliendo del menu de búsqueda...\n";
+                cout << "Saliendo del menu de busqueda...\n";
                 break;
             default:
                 cout << "Opcion invalida.\n";

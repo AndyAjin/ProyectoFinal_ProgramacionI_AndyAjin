@@ -2,18 +2,17 @@
 #include "Ventas.h"
 #include "Productos.h"
 #include <iostream>
-#include <algorithm>
 #include <iomanip>
-#include <climits>
-#include <cstring>   // para strcmp
-#include <cstdlib>   // para atoi
+#include <climits>    // para INT_MAX para calcular el valor maximo de un int
+#include <cstring>   // para strcmp para comparar dos cadenas de caracteres tipo char[]
+#include <cstdlib>   // para atoi para convertir una cadena de caracteres en un numero entero
 #include <fstream>
 using namespace std;
 
-// Productos con menor stock
+//Reporte de Productos con menor stock
 void reporteMenorStock(const vector<Productos>& productos) {
     cout << "\n--- Productos con menor stock ---\n";
-    int minimo = INT_MAX;
+    int minimo = INT_MAX; //Calcula el Maximo valor que puede almacenar un int
     for (const auto& p : productos) {
         if (p.stock < minimo) minimo = p.stock;
     }
@@ -24,7 +23,7 @@ void reporteMenorStock(const vector<Productos>& productos) {
     }
 }
 
-// Productos más vendidos
+// Reporte de Productos más vendidos
 void reporteMasVendidos(const vector<Productos>& productos, const vector<Ventas>& ventas) {
     vector<int> acumulado(productos.size(), 0);
 
@@ -50,7 +49,7 @@ void reporteMasVendidos(const vector<Productos>& productos, const vector<Ventas>
     }
 }
 
-// Ventas totales del día
+// Reporte de Ventas totales del día
 void reporteVentasDia(const vector<Ventas>& ventas, const string& fecha) {
     cout << "\n--- Ventas del dia " << fecha << " ---\n";
     double totalDia = 0;
@@ -63,7 +62,7 @@ void reporteVentasDia(const vector<Ventas>& ventas, const string& fecha) {
     cout << "TOTAL DEL DIA: " << fixed << setprecision(2) << totalDia << endl;
 }
 
-// Ventas por mes y día (matriz con char[])
+// Reporte de Ventas por mes y día (matriz con char[])
 void reporteVentasMesDia(const std::vector<Ventas>& ventas, int ventasPorMesDia[12][31]) {
     // Inicializar matriz
     for (int mes = 0; mes < 12; mes++) {
@@ -108,8 +107,9 @@ void reporteVentasMesDia(const std::vector<Ventas>& ventas, int ventasPorMesDia[
     }
 }
 
+//Funcion para mostrar estadisticas del sistema de Productos.
 void mostrarEstadisticas(const vector<Productos>& productos) {
-    if (productos.empty()) {
+    if (productos.empty()) { //empty retorna un booleano, indicando si el contenedor esta vacio.
         cout << "No hay productos en el inventario.\n";
         return;
     }
@@ -133,6 +133,7 @@ void mostrarEstadisticas(const vector<Productos>& productos) {
     cout << "Promedio de precio: Q." << (valorInventario / (totalStock > 0 ? totalStock : 1)) << "\n";
 }
 
+//Exporta el reporte de inventario a un archivo txt
 void exportarReporteTXT(const vector<Productos>& productos) {
     ofstream archivo("reporte_inventario.txt");
     if (!archivo) {

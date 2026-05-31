@@ -7,6 +7,7 @@
 #include <vector>
 using namespace std;
 
+//Menu para Productos
 void gestionproductos(vector<Productos>& producto) { 
 try{
     int opcion;
@@ -39,6 +40,7 @@ try{
     }
 }
 
+//Menu para Ventas
 void gestionventas(vector<Productos>& productos, vector<Ventas>& ventas){
 try{
     int opcion;
@@ -78,6 +80,7 @@ try{
     }
 }
 
+//Menu para opciones de Reportes
 void gestionreportes(vector<Productos>& productos, vector<Ventas>& ventas) {
 try{
     int opcion;
@@ -115,7 +118,7 @@ try{
                 break;
             }
             case 4: {
-                int ventasPorMesDia[12][31];
+                int ventasPorMesDia[12][31];  //Matriz para reportes de ventas al mes
                 reporteVentasMesDia(ventas, ventasPorMesDia);
                 break;
              }
@@ -144,6 +147,7 @@ try{
     }
 }
 
+//Menu para opciones de Ordenamiento
 void gestionorden(vector<Productos>& productos, vector<Ventas>& ventas){
 try{
     int opcion;
@@ -214,9 +218,11 @@ try{
     }
 }
 
+//Menu General, Controla el flujo general del programa.
 void menu() {
 try{
     int opcion;
+    //vectores que cargan los datos en productos y ventas
     vector<Productos> productos;
     vector<Ventas> ventas;
 

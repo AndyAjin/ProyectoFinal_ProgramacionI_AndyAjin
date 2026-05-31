@@ -5,10 +5,11 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
-#include <ctime>     // para strftime
-#include <cstring>   // para strcpy
+#include <ctime>     // para strftime Convierte un objeto de tipo struct tm (estructura que guarda año, mes, día, hora, etc.) en un texto con el formato que tú especifiques.
+#include <cstring>   // para strcpy Se usa para copiar el contenido de una cadena de caracteres (char[]) a otra.
 using namespace std;
 
+// Carga las ventas desde el archivo "ventas.dat" al vector.
 void cargarVentas(vector<Ventas>& ventas) {
     ifstream archivo("ventas.dat", ios::binary);
     if (!archivo) return;
@@ -21,8 +22,9 @@ void cargarVentas(vector<Ventas>& ventas) {
     archivo.close();
 }
 
+// Registra una nueva venta en el sistema.
 void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
-    try {
+    try { //bloque donde se coloca el código que puede fallar.
         Ventas venta;
         int ultimoID = 0;
 
@@ -38,11 +40,12 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
         venta.idVenta = ultimoID + 1;
 
         ofstream archivo("ventas.dat", ios::app | ios::binary);
-        if (!archivo) throw "No se puede abrir el archivo ventas.dat";
+        if (!archivo) throw "No se puede abrir el archivo ventas.dat"; 
+        //throw  se usa para lanzar una excepción (un error o condición especial).
 
         // Fecha actual
-        time_t t = time(nullptr);
-        tm* now = localtime(&t);
+        time_t t = time(nullptr); //Representa un puntero que no apunta a ninguna dirección válida en memoria, para evitar errores de ambigüedad.
+        tm* now = localtime(&t); //localtime convierte un tiempo en segundos a una fecha/hora local.
         strftime(venta.fecha, sizeof(venta.fecha), "%Y-%m-%d", now);
 
         cin.ignore();
@@ -51,17 +54,19 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
         cout << "Nombre del cliente: ";
         string clienteTemp;
         getline(cin, clienteTemp);
-        if (clienteTemp.empty()) throw "El nombre no puede estar vacío.";
+        if (clienteTemp.empty()) throw "El nombre no puede estar vacio.";
 
         // Validar que todos los caracteres sean letras o espacios
         for (size_t i = 0; i < clienteTemp.size(); i++) {
-            if (!isalpha(clienteTemp[i]) && clienteTemp[i] != ' ') {
+            if (!isalpha(clienteTemp[i]) && clienteTemp[i] != ' ') { //isalpha Sirve para verificar si un carácter es una letra del alfabeto.
                 throw "El nombre solo puede contener letras.";
             }
         }
         Mayusculas(clienteTemp);
         strncpy(venta.cliente, clienteTemp.c_str(), sizeof(venta.cliente));
         venta.cliente[sizeof(venta.cliente)-1] = '\0';
+        //strncpy Se usa para copiar una cantidad limitada de caracteres de una cadena (char[]) a otra, evitando desbordamientos de memoria.
+        //c_str Devuelve un puntero constante a un arreglo de caracteres que representa el contenido de la cadena, util para convertir string's a char.
 
         venta.subtotal = 0;
         venta.numProductos = 0;
@@ -71,7 +76,7 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
             int id;
             cout << "Ingrese el ID del Producto: ";
             cin >> id;
-            if (cin.fail()) throw "El ID debe ser un numero\n";
+            if (cin.fail()) throw "El ID debe ser un numero\n"; //fail Sirve para comprobar si ocurrió un error en la operación de entrada/salida.
             if (id < 0) throw "El ID no puede ser un numero negativo.\n";
 
             Productos* p = buscarporcodigo(productos, id);
@@ -156,13 +161,14 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
 
         cout << "Venta registrada correctamente.\n";
 
-    } catch (const char* msg) {
+    } catch (const char* msg) { //catch captura el error tomado por throw y lo maneja sin que el programa se caiga.
     cout << "Error: " << msg << endl;
     cin.clear();              // limpia el estado de error de cin
     cin.ignore(1000, '\n');   // descarta la entrada inválida
     }
 }
 
+// Muestra todas las ventas registradas.
 void mostrarventa(const vector<Ventas>& ventas) {
     cout << "\n--- LISTA DE VENTAS ---\n";
     for (size_t i = 0; i < ventas.size(); i++) {

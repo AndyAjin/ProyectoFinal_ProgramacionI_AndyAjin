@@ -1,11 +1,13 @@
 #include "Ordenamiento.h"
 #include <algorithm>
-#include <cstring>   // para strcmp
+#include <cstring>   // para strcmp para comparar cadenas de texto de tipo Char[]
 #include <iostream>
 #include <fstream>
 using namespace std;
 
-// Ordenar productos por precio
+// Ordenar productos por precio con algoritmo de ordenamiento (Selection Sort)
+
+// Ordenar productos por precio recorriendo el vector de productos.
 void ordenarPorPrecio(vector<Productos>& productos, bool ascendente) {
     int n = productos.size();
 
@@ -32,7 +34,9 @@ void ordenarPorPrecio(vector<Productos>& productos, bool ascendente) {
     }
 }
 
-// Ordenar productos por stock
+// Ordenar productos por stock con algoritmo de ordenamiento (Selection Sort)
+
+// - Similar a ordenarPorPrecio, pero usando el campo stock.
 void ordenarPorStock(vector<Productos>& productos, bool ascendente) {
     int n = productos.size();
 
@@ -58,7 +62,10 @@ void ordenarPorStock(vector<Productos>& productos, bool ascendente) {
     }
 }
 
-// Ordenar productos por ventas acumuladas
+// Ordenar productos por ventas acumuladas con algoritmo de ordenamiento (Selection Sort)
+
+// - Calcula cuántas unidades se han vendido de cada producto.
+// - Usa strcmp para comparar nombres de productos.
 void ordenarPorVentas(vector<Productos>& productos, const vector<Ventas>& ventas, bool ascendente) {
     // Calcular ventas acumuladas por producto
     vector<int> acumulado(productos.size(), 0);
@@ -98,6 +105,7 @@ void ordenarPorVentas(vector<Productos>& productos, const vector<Ventas>& ventas
     }
 }
 
+// Reiniciar inventario con confirmacion del usuario
 void reiniciarInventario(vector<Productos>& productos) {
     try{
     char confirmacion;

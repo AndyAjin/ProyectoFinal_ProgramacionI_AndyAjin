@@ -5,6 +5,8 @@
 #include <vector>
 using namespace std;
 
+// Compara dos cadenas ignorando mayúsculas/minúsculas.
+// Retorna true si son iguales sin importar el caso.
 bool compararCadenas(const char a[], const char b[]) {
     int i = 0;
     while (a[i] != '\0' && b[i] != '\0') {
@@ -28,10 +30,12 @@ void convertirMayusculas(char texto[]) {
   }
 }
 
+// Calcula el subtotal multiplicando cantidad × precio unitario.
 double calcularSubtotal(int cantidad, double precio) { 
     return cantidad * precio; 
 }
 
+// Calcula el descuento aplicable.
 double calcularDescuento(double subtotal, int tipoPago, int cantidades) {
     double descuento = 0;
 
@@ -52,15 +56,18 @@ double calcularDescuento(double subtotal, int tipoPago, int cantidades) {
     return descuento;
 }
 
+// Calcula el IVA (12% del subtotal).
 double calculariva(double subtotal) { 
     double iva = 0.12;
     return subtotal * iva; 
 }
 
+// Calcula el total final: subtotal + IVA - descuento.
 double calcularTotal(double subtotal, double iva, double descuento) {
     return (subtotal + iva) - descuento;
 }
 
+// Muestra el tipo de pago según código.
 void mostrarTipoPago(int tipoPago) {
     switch (tipoPago) {
         case 1: cout << "Efectivo"; break;
