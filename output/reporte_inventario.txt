@@ -1,0 +1,7 @@
+===== REPORTE DE INVENTARIO =====
+ID: 1
+Producto: MIEL
+Categoria: endulsante
+Stock: 100
+Precio Unitario: Q.20.00
+---------------------------------------------
