@@ -18,9 +18,8 @@ El sistema está dividido en múltiples módulos (`.h` y `.cpp`) para mantener u
 
 ## Estructura del proyecto
 
-ProyectoFinal/
-│
-├── Productos.h / Productos.cpp       # Módulo de gestión de productos
+ProyectoFinal:
+- ** Productos.h / Productos.cpp       # Módulo de gestión de productos
 
 ├── Ventas.h / Ventas.cpp             # Módulo de gestión de ventas
 
