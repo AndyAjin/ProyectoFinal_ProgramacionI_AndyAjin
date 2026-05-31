@@ -21,10 +21,15 @@ El sistema está dividido en múltiples módulos (`.h` y `.cpp`) para mantener u
 ProyectoFinal/
 │
 ├── Productos.h / Productos.cpp       # Módulo de gestión de productos
+
 ├── Ventas.h / Ventas.cpp             # Módulo de gestión de ventas
+
 ├── Reportes.h / Reportes.cpp         # Módulo de reportes y estadísticas
+
 ├── Ordenamiento.h / Ordenamiento.cpp # Módulo de ordenamiento y reinicio de inventario
+
 ├── Menus.h / Menus.cpp               # Menús principales y submenús
+
 └── main.cpp                          # Punto de entrada del sistema
 
 ---
@@ -48,6 +53,6 @@ g++ "Proyecto Final.cpp" Productos.cpp Ventas.cpp Reportes.cpp Ordenamiento.cpp 
 Seleccione una opcion:
 
 
-Autor:
-Proyecto desarrollado por Andy Antonio Ajin R. como parte del Proyecto Final en C++ de la clase de Programacion I.
+Autor: Andy Antonio Ajin R. Carnet: 9941-25-104
+Proyecto desarrollado para Proyecto Final en C++ de la clase de Programacion I.
 El código aplica buenas prácticas de modularidad, validación y manejo de archivos binarios.
