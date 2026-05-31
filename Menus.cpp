@@ -5,6 +5,7 @@
 #include "Menus.h"
 #include <iostream>
 #include <vector>
+#include <limits>
 using namespace std;
 
 //Menu para Productos
@@ -52,7 +53,6 @@ try{
         cout << "Seleccione una opcion: ";
         cin >> opcion;
         if(cin.fail()) throw "La opcion debe ser un numero";
-        cin.ignore(1000, '\n');
 
         switch (opcion) {
             case 1: 
@@ -76,7 +76,7 @@ try{
     } catch (const char* msg) {
     cout << "Error: " << msg << endl;
     cin.clear();              // limpia el estado de error de cin
-    cin.ignore(1000, '\n');   // descarta la entrada inválida
+    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');   // descarta la entrada inválida
     }
 }
 

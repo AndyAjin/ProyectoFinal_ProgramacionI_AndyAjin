@@ -59,6 +59,6 @@ Cualquier terminal ya sea "bash", Cmd o Powershell
 Seleccione una opcion:
 
 
-# Autor: Andy Antonio Ajin R. Carnet: 9941-25-104
+Autor: Andy Antonio Ajin R. Carnet: 9941-25-104
 Proyecto desarrollado para Proyecto Final en C++ de la clase de Programacion I.
 El código aplica buenas prácticas de modularidad, validación y manejo de archivos binarios.

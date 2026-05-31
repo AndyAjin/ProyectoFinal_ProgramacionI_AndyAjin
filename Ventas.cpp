@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
+#include <limits> 
 #include <ctime>     // para strftime Convierte un objeto de tipo struct tm (estructura que guarda año, mes, día, hora, etc.) en un texto con el formato que tú especifiques.
 #include <cstring>   // para strcpy Se usa para copiar el contenido de una cadena de caracteres (char[]) a otra.
 using namespace std;
@@ -48,20 +49,21 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
         tm* now = localtime(&t); //localtime convierte un tiempo en segundos a una fecha/hora local.
         strftime(venta.fecha, sizeof(venta.fecha), "%Y-%m-%d", now);
 
-        cin.ignore();
         cout << "\n--- Registro de Venta ---\n";
         cout << "ID de la venta: " << venta.idVenta << endl;
         cout << "Nombre del cliente: ";
         string clienteTemp;
         getline(cin, clienteTemp);
+        
         if (clienteTemp.empty()) throw "El nombre no puede estar vacio.";
 
-        // Validar que todos los caracteres sean letras o espacios
         for (size_t i = 0; i < clienteTemp.size(); i++) {
-            if (!isalpha(clienteTemp[i]) && clienteTemp[i] != ' ') { //isalpha Sirve para verificar si un carácter es una letra del alfabeto.
-                throw "El nombre solo puede contener letras.";
-            }
+        unsigned char c = clienteTemp[i]; // unsigned sirve para indicar que un tipo de dato no puede representar valores negativos
+        if (!isalpha(c) && c != ' ') {
+        throw "El nombre solo puede contener letras y espacios.";
         }
+    }
+
         Mayusculas(clienteTemp);
         strncpy(venta.cliente, clienteTemp.c_str(), sizeof(venta.cliente));
         venta.cliente[sizeof(venta.cliente)-1] = '\0';
@@ -116,7 +118,7 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
             cout << "Desea agregar otro producto (S/N) ";
             cin >> continuar;
             if (cin.fail()) throw "Debe ingresar una letra (S/N).";
-            cin.ignore();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
             // Validar que solo sea S o N (mayúscula o minúscula)
             if (continuar != 'S' && continuar != 's' &&
@@ -164,7 +166,7 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
     } catch (const char* msg) { //catch captura el error tomado por throw y lo maneja sin que el programa se caiga.
     cout << "Error: " << msg << endl;
     cin.clear();              // limpia el estado de error de cin
-    cin.ignore(1000, '\n');   // descarta la entrada inválida
+    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');// descarta la entrada inválida
     }
 }
 
