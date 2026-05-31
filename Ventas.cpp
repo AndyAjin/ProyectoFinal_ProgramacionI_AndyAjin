@@ -51,7 +51,7 @@ void registrarVenta(vector<Productos>& productos, vector<Ventas>& ventas) {
 
         cout << "\n--- Registro de Venta ---\n";
         cout << "ID de la venta: " << venta.idVenta << endl;
-        cin.ignore();
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         cout << "Nombre del cliente: ";
         string clienteTemp;
         getline(cin, clienteTemp);
